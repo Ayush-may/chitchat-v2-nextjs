@@ -1,6 +1,8 @@
 import Login from "@/components/Login";
 import NavLink from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
+import { Tabs } from "@/components/ui/tabs";
+import { TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 
 export default function Home() {
     return (
@@ -11,12 +13,23 @@ export default function Home() {
                     <NavLink href={"/"}>Home</NavLink>
                     <NavLink href={"/about-us"}>About us</NavLink>
                     <NavLink href={"/contact-us"}>Contact us</NavLink>
-                    <Button className="">Login</Button>
+                    <Button className="rounded-none">Login</Button>
                 </div>
             </nav>
 
-            <div className="p-4 border flex-1 pattern-cross-dots-md">
-                <Login />
+            <div className="p-4 flex-1 pattern-cross-dots-md w-full flex justify-center">
+                <Tabs defaultValue="login" className="w-10/12">
+                    <TabsList className="grid w-full grid-cols-2 bg-black text-white p-1">
+                        <TabsTrigger value="login" className="">Login</TabsTrigger>
+                        <TabsTrigger value="signup">Login</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="login">
+                        <Login />
+                    </TabsContent>
+                    <TabsContent value="signup">
+                        this is signup
+                    </TabsContent>
+                </Tabs>
             </div>
         </main>
     );
