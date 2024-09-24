@@ -1,3 +1,4 @@
+import Login from "@/components/Login";
 import NavLink from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 
@@ -15,7 +16,7 @@ export default function Home() {
             </nav>
 
             <div className="p-4 border flex-1 pattern-cross-dots-md">
-                
+                <Login />
             </div>
         </main>
     );
