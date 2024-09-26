@@ -15,12 +15,12 @@ export default function Mytabs() {
     }
 
     const handleCss = (tab) => {
-        return selected == tab ? "bg-slate-500 text-whites rounded-sm" : " text-whites";
+        return selected == tab ? "bg-slate-500 text-whites rounded-sm p-0.5" : " text-whites p-0.5";
     }
 
     return (
         <Tabs defaultValue="login" className="w-10/12 h-fit">
-            <TabsList className="grid w-full grid-cols-3 bg-slate-900 text-white py-1.5 px-2 mb-2">
+            <TabsList className="grid w-full md:grid-cols-3 gap-1.5 bg-slate-900 text-white py-1.5 px-2 mb-2">
                 <TabsTrigger value="login"
                     className={`${handleCss("tab1")}`}
                     onClick={() => handleSelection("tab1")}

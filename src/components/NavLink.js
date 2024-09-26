@@ -10,7 +10,7 @@ export default function NavLink({href, children}){
     return (
         <>
             <Link href={href} passHref>
-                <p className={`text-gray-800 text-xl ${isActive ? "active" : ""}`}>
+                <p className={`text-xl ${isActive ? "text-red-500" : "text-black"}`}>
                     {children}
                 </p>
             </Link>
