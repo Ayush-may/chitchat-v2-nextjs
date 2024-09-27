@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Tabs, TabsTrigger } from "@radix-ui/react-tabs";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 export default function Signup() {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,20 +21,22 @@ export default function Signup() {
 
         console.log(data);
         const correctPassword = "";
+        
+        const promise = new Promise((solve, error) => setTimeout(() => {
+            solve({ name: "Ayush Sharma" })
+        }, 2000));
 
-        // fake promise
-        await new Promise(resolve => setTimeout(() => { resolve() }, 1000));
-        /*
-                Password Validation
-                if (data.password !== correctPassword) {
-                    setError('password', {
-                        type: 'manual',
-                        message: 'Incorrect password!'
-                    })
-                    return;
-                }
-        */
-        setIsSubmitting(false);
+        toast.promise(promise, {
+            loading: "Loading...",
+            success: (data) => {
+                setIsSubmitting(false);
+                return "Account is created!"
+            },
+            error: () => {
+                setIsSubmitting(false);
+                return "Something went wrong!"
+            }
+        });
     }
 
 

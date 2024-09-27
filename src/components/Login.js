@@ -4,6 +4,8 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
+import { toast } from "sonner";
+// import { resolve } from "styled-jsx/css";
 
 export default function Login() {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,15 +22,21 @@ export default function Login() {
         console.log(data);
         const correctPassword = "";
 
-        if (data.password !== correctPassword) {
-            setError('password', {
-                type: 'manual',
-                message: 'Incorrect password!'
-            })
-            return;
-        }
+        const promise = new Promise((solve, error) => setTimeout(() => {
+            solve({ name: "Ayush Sharma" })
+        }, 2000));
 
-        setIsSubmitting(false);
+        toast.promise(promise, {
+            loading: "Logging...",
+            success: (data) => {
+                setIsSubmitting(false);
+                return "Welcome back!"
+            },
+            error: () => {
+                setIsSubmitting(false);
+                return "Something went wrong!"
+            }
+        });
     }
 
     return (
