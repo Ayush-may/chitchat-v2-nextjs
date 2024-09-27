@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -8,10 +8,37 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LogOut, Send, Search, Phone, Video, X, Image, Smile, Paperclip, Menu, ArrowLeft } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useRouter } from 'next/navigation'
+import { OrbitProgress } from 'react-loading-indicators'
 
 const emojis = ['😀', '😂', '😍', '🥳', '😎', '🤔', '👍', '❤️', '🎉', '🌟']
 
 export default function ChatInterface() {
+  const router = useRouter();
+  const [isLoadig, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        // Simulate an API call for authentication check
+        await new Promise((resolve, reject) => setTimeout(() => resolve(), 2000));
+        setIsLoading(false);
+      } catch (error) {
+        router.push('/'); // Redirect to home if not authenticated
+      }
+    };
+
+    checkAuth();
+  }, [router]); // Add router as a dependency
+
+  if (isLoadig) {
+    return (
+      <div className='w-full h-full flex justify-center items-center'>
+        <OrbitProgress dense color="#000000" size="small" text="" textColor="" />
+      </div>
+    )
+  }
+
   const [users, setUsers] = useState([
     { id: 1, name: "Alice", avatar: "/placeholder.svg?height=32&width=32", lastMessage: "Hey, how are you?" },
     { id: 2, name: "Bob", avatar: "/placeholder.svg?height=32&width=32", lastMessage: "Did you see the game last night?" },
@@ -51,8 +78,8 @@ export default function ChatInterface() {
       }
       setMessages([...messages, newMessage])
       setInputMessage("")
-      
-      setUsers(users.map(user => 
+
+      setUsers(users.map(user =>
         user.id === selectedUser.id ? { ...user, lastMessage: inputMessage } : user
       ))
     }
@@ -174,16 +201,14 @@ export default function ChatInterface() {
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`mb-4 ${
-                    message.sender === "user" ? "text-right" : "text-left"
-                  }`}
+                  className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"
+                    }`}
                 >
                   <div
-                    className={`inline-block p-2 rounded-lg ${
-                      message.sender === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-white text-gray-800 border border-gray-200"
-                    }`}
+                    className={`inline-block p-2 rounded-lg ${message.sender === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-white text-gray-800 border border-gray-200"
+                      }`}
                   >
                     {message.type === 'text' ? (
                       message.text
@@ -273,16 +298,14 @@ export default function ChatInterface() {
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`mb-4 ${
-                    message.sender === "user" ? "text-right" : "text-left"
-                  }`}
+                  className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"
+                    }`}
                 >
                   <div
-                    className={`inline-block p-2 rounded-lg ${
-                      message.sender === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-white text-gray-800 border border-gray-200"
-                    }`}
+                    className={`inline-block p-2 rounded-lg ${message.sender === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-white text-gray-800 border border-gray-200"
+                      }`}
                   >
                     {message.type === 'text' ? (
                       message.text
@@ -370,5 +393,6 @@ export default function ChatInterface() {
         </DialogContent>
       </Dialog>
     </div>
+
   )
 }
