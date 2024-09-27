@@ -19,17 +19,20 @@ export default function Mytabs() {
     }
 
     return (
-        <Tabs defaultValue="login" className="w-10/12 h-fit">
+        <Tabs defaultValue="login" className="md:w-10/12 w-full h-fit">
             <TabsList className="grid w-full md:grid-cols-3 gap-1.5 bg-slate-900 text-white py-1.5 px-2 mb-2">
-                <TabsTrigger value="login"
+                <TabsTrigger
+                    value="login"
                     className={`${handleCss("tab1")}`}
                     onClick={() => handleSelection("tab1")}
                 >Login</TabsTrigger>
-                <TabsTrigger value="signup"
+                <TabsTrigger
+                    value="signup"
                     className={`${handleCss("tab2")}`}
                     onClick={() => handleSelection("tab2")}
                 >Sign up</TabsTrigger>
-                <TabsTrigger value="forgetpassword"
+                <TabsTrigger
+                    value="forgetpassword"
                     className={`${handleCss("tab3")}`}
                     onClick={() => handleSelection("tab3")}
                 >Forget Password</TabsTrigger>

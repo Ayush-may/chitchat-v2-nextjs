@@ -1,13 +1,13 @@
-import Mytabs from "@/components/Mytabs";
-import Navbar from "@/components/Navbar";
+"use client"
+
+import Index from ".";
+import { Provider } from "react-redux";
+import store from "@/store/store";
 
 export default function Home() {
     return (
-        <main className="w-full h-full flex flex-col">
-            <Navbar />
-            <div className="p-4 flex-1 pattern-cross-dots-lg w-full flex justify-center">
-                <Mytabs />
-            </div>
-        </main>
+        <Provider store={store}>
+            <Index />
+        </Provider>
     );
 }
