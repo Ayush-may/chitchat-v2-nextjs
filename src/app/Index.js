@@ -1,7 +1,9 @@
 import Mytabs from "@/components/Mytabs";
 import Navbar from "@/components/Navbar";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
-export default function Index(){
+export default function Index() {
     return (
         <main className="w-full h-full flex flex-col">
             <Navbar />

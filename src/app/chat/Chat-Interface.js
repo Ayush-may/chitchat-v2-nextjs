@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useRouter } from 'next/navigation'
 import { OrbitProgress } from 'react-loading-indicators'
+import { toast, Toaster } from 'sonner'
 
 const emojis = ['😀', '😂', '😍', '🥳', '😎', '🤔', '👍', '❤️', '🎉', '🌟']
 
@@ -20,18 +21,18 @@ export default function ChatInterface() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Simulate an API call for authentication check
         await new Promise((resolve, reject) => setTimeout(() => resolve(), 2000));
         setIsLoading(false);
       } catch (error) {
-        router.push('/'); // Redirect to home if not authenticated
+        toast.error("Something went wrong!");
+        router.push('/');
       }
     };
 
     checkAuth();
-  }, [router]); // Add router as a dependency
+  }, [router]);
 
-  if (isLoadig) {
+  const LoadingScreen = () => {
     return (
       <div className='w-full h-full flex justify-center items-center'>
         <OrbitProgress dense color="#000000" size="small" text="" textColor="" />
@@ -95,7 +96,9 @@ export default function ChatInterface() {
     setIsVideoCall(false)
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // await new Promise((resolve) => setTimeout(() => { resolve() }, 2000));
+    
     alert("Logout functionality would be implemented here")
   }
 
@@ -139,260 +142,264 @@ export default function ChatInterface() {
   )
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-gray-100">
-      {/* Sidebar for larger screens */}
-      <div className="hidden md:flex md:w-80 border-r flex-col bg-white shadow-md">
-        <div className="p-4 bg-primary flex justify-between items-center">
-          <h2 className="text-primary-foreground text-xl font-bold">Chats</h2>
-          <Button variant="ghost" size="icon" onClick={handleLogout}>
-            <LogOut className="h-5 w-5 text-primary-foreground" />
-          </Button>
-        </div>
-        <div className="p-2">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search chats" className="pl-8" />
-          </div>
-        </div>
-        <UserList />
-      </div>
-
-      {/* Main area (user list or chat) for small screens */}
-      <div className="flex-1 flex flex-col bg-white md:hidden">
-        {showUserList ? (
-          <>
-            <div className="p-4 bg-primary flex justify-between items-center">
-              <h2 className="text-primary-foreground text-xl font-bold">Chats</h2>
-              <Button variant="ghost" size="icon" onClick={handleLogout}>
-                <LogOut className="h-5 w-5 text-primary-foreground" />
-              </Button>
-            </div>
-            <div className="p-2">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search chats" className="pl-8" />
-              </div>
-            </div>
-            <UserList />
-          </>
-        ) : selectedUser ? (
-          <>
-            <div className="bg-primary p-4 flex items-center justify-between shadow-md">
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost" size="icon" onClick={() => setShowUserList(true)}>
-                  <ArrowLeft className="h-5 w-5 text-primary-foreground" />
-                </Button>
-                <Avatar>
-                  <AvatarImage src={selectedUser.avatar} alt={selectedUser.name} />
-                  <AvatarFallback>{selectedUser.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <h1 className="text-primary-foreground text-xl font-bold">{selectedUser.name}</h1>
-              </div>
-              <div className="flex space-x-2">
-                <Button variant="ghost" size="icon" onClick={() => handleCall(false)}>
-                  <Phone className="h-5 w-5 text-primary-foreground" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => handleCall(true)}>
-                  <Video className="h-5 w-5 text-primary-foreground" />
+    <>
+      {isLoadig ? (<LoadingScreen />) :
+        (
+          <div className="flex h-screen w-full overflow-hidden bg-gray-100">
+            {/* Sidebar for larger screens */}
+            <div className="hidden md:flex md:w-80 border-r flex-col bg-white shadow-md">
+              <div className="p-4 bg-primary flex justify-between items-center">
+                <h2 className="text-primary-foreground text-xl font-bold">Chats</h2>
+                <Button variant="destructive"  onClick={handleLogout} >
+                  <LogOut className="h-5 w-5 text-white" />
                 </Button>
               </div>
-            </div>
-            <ScrollArea className="flex-grow p-4 bg-gray-50">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"
-                    }`}
-                >
-                  <div
-                    className={`inline-block p-2 rounded-lg ${message.sender === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-white text-gray-800 border border-gray-200"
-                      }`}
-                  >
-                    {message.type === 'text' ? (
-                      message.text
-                    ) : (
-                      <img src={message.text} alt="Shared image" className="max-w-xs rounded-lg" />
-                    )}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {message.timestamp}
-                    {message.sender === 'user' && (
-                      <span className="ml-2">
-                        {message.read ? '✓✓' : '✓'}
-                      </span>
-                    )}
-                  </div>
+              <div className="p-2">
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Search chats" className="pl-8" />
                 </div>
-              ))}
-            </ScrollArea>
-            <div className="p-4 bg-gray-100">
-              <div className="flex space-x-2 items-center">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <Smile className="h-5 w-5 text-gray-500" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-64">
-                    <div className="grid grid-cols-5 gap-2">
-                      {emojis.map((emoji, index) => (
-                        <Button
-                          key={index}
-                          variant="ghost"
-                          className="text-2xl"
-                          onClick={() => handleEmojiSelect(emoji)}
-                        >
-                          {emoji}
-                        </Button>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-                <Button variant="ghost" size="icon" onClick={handleMediaUpload}>
-                  <Paperclip className="h-5 w-5 text-gray-500" />
-                </Button>
-                <Input
-                  placeholder="Type a message"
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  className="flex-grow"
-                />
-                <Button onClick={handleSendMessage}>
-                  <Send className="h-4 w-4" />
-                </Button>
               </div>
+              <UserList />
             </div>
-          </>
-        ) : (
-          <div className="flex-grow flex items-center justify-center bg-gray-50">
-            <p className="text-muted-foreground">Select a chat to start messaging</p>
+
+            {/* Main area (user list or chat) for small screens */}
+            <div className="flex-1 flex flex-col bg-white md:hidden">
+              {showUserList ? (
+                <>
+                  <div className="p-4 bg-primary flex justify-between items-center">
+                    <h2 className="text-primary-foreground text-xl font-bold">Chats</h2>
+                    <Button variant="ghost" size="icon" onClick={handleLogout}>
+                      <LogOut className="h-5 w-5 text-primary-foreground" />
+                    </Button>
+                  </div>
+                  <div className="p-2">
+                    <div className="relative">
+                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input placeholder="Search chats" className="pl-8" />
+                    </div>
+                  </div>
+                  <UserList />
+                </>
+              ) : selectedUser ? (
+                <>
+                  <div className="bg-primary p-4 flex items-center justify-between shadow-md">
+                    <div className="flex items-center space-x-4">
+                      <Button variant="ghost" size="icon" onClick={() => setShowUserList(true)}>
+                        <ArrowLeft className="h-5 w-5 text-primary-foreground" />
+                      </Button>
+                      <Avatar>
+                        <AvatarImage src={selectedUser.avatar} alt={selectedUser.name} />
+                        <AvatarFallback>{selectedUser.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <h1 className="text-primary-foreground text-xl font-bold">{selectedUser.name}</h1>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="ghost" size="icon" onClick={() => handleCall(false)}>
+                        <Phone className="h-5 w-5 text-primary-foreground" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleCall(true)}>
+                        <Video className="h-5 w-5 text-primary-foreground" />
+                      </Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="flex-grow p-4 bg-gray-50">
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"
+                          }`}
+                      >
+                        <div
+                          className={`inline-block p-2 rounded-lg ${message.sender === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-white text-gray-800 border border-gray-200"
+                            }`}
+                        >
+                          {message.type === 'text' ? (
+                            message.text
+                          ) : (
+                            <img src={message.text} alt="Shared image" className="max-w-xs rounded-lg" />
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {message.timestamp}
+                          {message.sender === 'user' && (
+                            <span className="ml-2">
+                              {message.read ? '✓✓' : '✓'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </ScrollArea>
+                  <div className="p-4 bg-gray-100">
+                    <div className="flex space-x-2 items-center">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <Smile className="h-5 w-5 text-gray-500" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-64">
+                          <div className="grid grid-cols-5 gap-2">
+                            {emojis.map((emoji, index) => (
+                              <Button
+                                key={index}
+                                variant="ghost"
+                                className="text-2xl"
+                                onClick={() => handleEmojiSelect(emoji)}
+                              >
+                                {emoji}
+                              </Button>
+                            ))}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                      <Button variant="ghost" size="icon" onClick={handleMediaUpload}>
+                        <Paperclip className="h-5 w-5 text-gray-500" />
+                      </Button>
+                      <Input
+                        placeholder="Type a message"
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                        className="flex-grow"
+                      />
+                      <Button onClick={handleSendMessage}>
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex-grow flex items-center justify-center bg-gray-50">
+                  <p className="text-muted-foreground">Select a chat to start messaging</p>
+                </div>
+              )}
+            </div>
+
+            {/* Main chat area for larger screens */}
+            <div className="hidden md:flex md:flex-1 flex-col bg-white">
+              {selectedUser ? (
+                <>
+                  <div className="bg-primary p-4 flex items-center justify-between shadow-md">
+                    <div className="flex items-center space-x-4">
+                      <Avatar>
+                        <AvatarImage src={selectedUser.avatar} alt={selectedUser.name} />
+                        <AvatarFallback>{selectedUser.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <h1 className="text-primary-foreground text-xl font-bold">{selectedUser.name}</h1>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="ghost" size="icon" onClick={() => handleCall(false)}>
+                        <Phone className="h-5 w-5 text-primary-foreground" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleCall(true)}>
+                        <Video className="h-5 w-5 text-primary-foreground" />
+                      </Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="flex-grow p-4 bg-gray-50">
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"
+                          }`}
+                      >
+                        <div
+                          className={`inline-block p-2 rounded-lg ${message.sender === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-white text-gray-800 border border-gray-200"
+                            }`}
+                        >
+                          {message.type === 'text' ? (
+                            message.text
+                          ) : (
+                            <img src={message.text} alt="Shared image" className="max-w-xs rounded-lg" />
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {message.timestamp}
+                          {message.sender === 'user' && (
+                            <span className="ml-2">
+                              {message.read ? '✓✓' : '✓'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </ScrollArea>
+                  <div className="p-4 bg-gray-100">
+                    <div className="flex space-x-2 items-center">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <Smile className="h-5 w-5 text-gray-500" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-64">
+                          <div className="grid grid-cols-5 gap-2">
+                            {emojis.map((emoji, index) => (
+                              <Button
+                                key={index}
+                                variant="ghost"
+                                className="text-2xl"
+                                onClick={() => handleEmojiSelect(emoji)}
+                              >
+                                {emoji}
+                              </Button>
+                            ))}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                      <Button variant="ghost" size="icon" onClick={handleMediaUpload}>
+                        <Paperclip className="h-5 w-5 text-gray-500" />
+                      </Button>
+                      <Input
+                        placeholder="Type a message"
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                        className="flex-grow"
+                      />
+                      <Button onClick={handleSendMessage}>
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex-grow flex items-center justify-center bg-gray-50">
+                  <p className="text-muted-foreground">Select a chat to start messaging</p>
+                </div>
+              )}
+            </div>
+
+            {/* Call Dialog */}
+            <Dialog open={isCallActive} onOpenChange={setIsCallActive}>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>{isVideoCall ? "Video Call" : "Voice Call"}</DialogTitle>
+                  <DialogDescription>
+                    {isVideoCall ? "Video calling" : "Calling"} {selectedUser?.name}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-center items-center h-40">
+                  {isVideoCall ? (
+                    <Video className="h-20 w-20 text-primary" />
+                  ) : (
+                    <Phone className="h-20 w-20 text-primary" />
+                  )}
+                </div>
+                <Button variant="destructive" onClick={handleEndCall}>
+                  <X className="h-4 w-4 mr-2" />
+                  End Call
+                </Button>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
-      </div>
-
-      {/* Main chat area for larger screens */}
-      <div className="hidden md:flex md:flex-1 flex-col bg-white">
-        {selectedUser ? (
-          <>
-            <div className="bg-primary p-4 flex items-center justify-between shadow-md">
-              <div className="flex items-center space-x-4">
-                <Avatar>
-                  <AvatarImage src={selectedUser.avatar} alt={selectedUser.name} />
-                  <AvatarFallback>{selectedUser.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <h1 className="text-primary-foreground text-xl font-bold">{selectedUser.name}</h1>
-              </div>
-              <div className="flex space-x-2">
-                <Button variant="ghost" size="icon" onClick={() => handleCall(false)}>
-                  <Phone className="h-5 w-5 text-primary-foreground" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => handleCall(true)}>
-                  <Video className="h-5 w-5 text-primary-foreground" />
-                </Button>
-              </div>
-            </div>
-            <ScrollArea className="flex-grow p-4 bg-gray-50">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"
-                    }`}
-                >
-                  <div
-                    className={`inline-block p-2 rounded-lg ${message.sender === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-white text-gray-800 border border-gray-200"
-                      }`}
-                  >
-                    {message.type === 'text' ? (
-                      message.text
-                    ) : (
-                      <img src={message.text} alt="Shared image" className="max-w-xs rounded-lg" />
-                    )}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {message.timestamp}
-                    {message.sender === 'user' && (
-                      <span className="ml-2">
-                        {message.read ? '✓✓' : '✓'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </ScrollArea>
-            <div className="p-4 bg-gray-100">
-              <div className="flex space-x-2 items-center">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <Smile className="h-5 w-5 text-gray-500" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-64">
-                    <div className="grid grid-cols-5 gap-2">
-                      {emojis.map((emoji, index) => (
-                        <Button
-                          key={index}
-                          variant="ghost"
-                          className="text-2xl"
-                          onClick={() => handleEmojiSelect(emoji)}
-                        >
-                          {emoji}
-                        </Button>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-                <Button variant="ghost" size="icon" onClick={handleMediaUpload}>
-                  <Paperclip className="h-5 w-5 text-gray-500" />
-                </Button>
-                <Input
-                  placeholder="Type a message"
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  className="flex-grow"
-                />
-                <Button onClick={handleSendMessage}>
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="flex-grow flex items-center justify-center bg-gray-50">
-            <p className="text-muted-foreground">Select a chat to start messaging</p>
-          </div>
-        )}
-      </div>
-
-      {/* Call Dialog */}
-      <Dialog open={isCallActive} onOpenChange={setIsCallActive}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>{isVideoCall ? "Video Call" : "Voice Call"}</DialogTitle>
-            <DialogDescription>
-              {isVideoCall ? "Video calling" : "Calling"} {selectedUser?.name}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-center items-center h-40">
-            {isVideoCall ? (
-              <Video className="h-20 w-20 text-primary" />
-            ) : (
-              <Phone className="h-20 w-20 text-primary" />
-            )}
-          </div>
-          <Button variant="destructive" onClick={handleEndCall}>
-            <X className="h-4 w-4 mr-2" />
-            End Call
-          </Button>
-        </DialogContent>
-      </Dialog>
-    </div>
-
+    </>
   )
 }
