@@ -18,7 +18,7 @@ export default function Navbar() {
                     <h1 className="font-bold text-2xl md:text-4xl">SocialMedia.</h1>
                     <div className="md:flex hidden items-center">
                         <NavLink href={"/"}>Home</NavLink>
-                        <NavLink href={"/about-us"}>About us</NavLink>
+                        {/* <NavLink href={"/about-us"}>About us</NavLink> */}
                         <NavLink href={"/contact-us"}>Contact us</NavLink>
                         {/* <Button className="rounded-none">Login</Button> */}
                     </div>

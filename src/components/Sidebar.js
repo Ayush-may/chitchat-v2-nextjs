@@ -27,7 +27,7 @@ export default function Sidebar() {
             <SheetContent>
                 <div className="w-full flex flex-col">
                     <NavLink href={"/"}>Home</NavLink>
-                    <NavLink href={"/about-us"}>About us</NavLink>
+                    {/* <NavLink href={"/about-us"}>About us</NavLink> */}
                     <NavLink href={"/contact-us"}>Contact us</NavLink>
                 </div>
             </SheetContent>
