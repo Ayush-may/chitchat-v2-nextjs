@@ -91,5 +91,5 @@ html, body{
 }
 
 main{
-  @apply max-w-[1400px] mx-auto
+  /* @apply max-w-[1400px] mx-auto */
 }

@@ -9,8 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-dialog": "^1.1.1",
+    "@radix-ui/react-hover-card": "^1.1.1",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-popover": "^1.1.1",
     "@radix-ui/react-scroll-area": "^1.1.0",
@@ -19,6 +21,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.445.0",
+    "mongoose": "^8.7.2",
     "next": "14.2.13",
     "pattern.css": "^1.0.0",
     "react": "^18",
