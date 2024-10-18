@@ -4,6 +4,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
+import axios from "axios";
 
 export default function Login() {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,17 +17,6 @@ export default function Login() {
 
     const onSubmit = async (data) => {
         setIsSubmitting(true);
-
-        console.log(data);
-        const correctPassword = "";
-
-        if (data.password !== correctPassword) {
-            setError('password', {
-                type: 'manual',
-                message: 'Incorrect password!'
-            })
-            return;
-        }
 
         setIsSubmitting(false);
     }
