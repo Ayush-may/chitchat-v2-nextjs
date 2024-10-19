@@ -1,13 +1,11 @@
-import Image from "next/image";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Tabs, TabsTrigger } from "@radix-ui/react-tabs";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { toast } from "sonner";
-
+import { useRouter } from "next/navigation";
 
 export default function Signup() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,13 +18,18 @@ export default function Signup() {
     formState: {
       errors
     } } = useForm();
+  const router = useRouter();
+
+  useEffect(() => {
+    router.prefetch("/chat");
+  }, [])
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     const { username, password } = data;
 
     toast.promise(
-      axios.post("/api/user", {
+      axios.post("/api/user/sign-up", {
         username, password
       }),
       {
@@ -34,8 +37,8 @@ export default function Signup() {
         success: (data) => {
           if (data.statusText == "OK") {
             reset();
+            router.push("/chat");
           }
-
           return "User has been created successfully!";
         },
         error: "Something went wrong!"

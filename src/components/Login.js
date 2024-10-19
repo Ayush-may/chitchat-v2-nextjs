@@ -5,18 +5,41 @@ import { Button } from "./ui/button";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import axios from "axios";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { register,
         handleSubmit,
         setError,
+        watch,
         formState: {
             errors
         } } = useForm();
+    const router = useRouter();
 
     const onSubmit = async (data) => {
         setIsSubmitting(true);
+        router.prefetch('/chat');
+
+        toast.promise(
+            axios.post('/api/user/login?skip_token_validation=true', {
+                username: watch("username"),
+                password: watch("password")
+            }),
+            {
+                loading: "Loading...",
+                success: (data) => {
+                    console.log(data);
+                    if (data.statusText === "OK") {
+                        router.push('/chat');
+                    }
+                    return `Logged in!`
+                },
+                error: "Something went wrong!"
+            }
+        );
 
         setIsSubmitting(false);
     }
