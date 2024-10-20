@@ -2,6 +2,9 @@ import localFont from "next/font/local";
 import "./globals.css";
 import "@/public/css/pattern.css"
 import { Toaster } from "sonner";
+import { ApolloProvider } from "@apollo/client";
+import client from "@/lib/apolloClient";
+import ApolloProviderWrappper from "@/components/ApolloProviderWrapper";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -25,14 +28,10 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
-        <Toaster
-          richColors
-          closeButton
-          expand={true}
-          duration={"3000"}
-          position="top-center"
-        />
+        <ApolloProviderWrappper >
+          {children}
+          <Toaster richColors closeButton expand={true} duration={3000} position="top-center" S />
+        </ApolloProviderWrappper>
       </body>
     </html>
   );

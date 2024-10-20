@@ -7,8 +7,11 @@ import { useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@apollo/client";
+import { GET_TODOS } from "@/queries/query";
 
 export default function Login() {
+    const { data, loading } = useQuery(GET_TODOS);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { register,
         handleSubmit,
@@ -43,6 +46,9 @@ export default function Login() {
 
         setIsSubmitting(false);
     }
+
+    if (loading)
+        return <p>Loading...</p>
 
     return (
         <div className="w-full border grid md:grid-cols-2 grid-cols-1 border-stone-400 bg-white">
