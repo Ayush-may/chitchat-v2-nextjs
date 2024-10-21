@@ -1,21 +1,18 @@
-import Image from "next/image";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@apollo/client";
-import { GET_TODOS } from "@/queries/query";
+import { useQuery, useMutation } from "@apollo/client";
+import { GET_USER_BY_USERNAME } from "@/app/api/queries/query";
 
 export default function Login() {
-    const { data, loading } = useQuery(GET_TODOS);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { register,
         handleSubmit,
-        setError,
         watch,
         formState: {
             errors
@@ -26,29 +23,10 @@ export default function Login() {
         setIsSubmitting(true);
         router.prefetch('/chat');
 
-        toast.promise(
-            axios.post('/api/user/login?skip_token_validation=true', {
-                username: watch("username"),
-                password: watch("password")
-            }),
-            {
-                loading: "Loading...",
-                success: (data) => {
-                    console.log(data);
-                    if (data.statusText === "OK") {
-                        router.push('/chat');
-                    }
-                    return `Logged in!`
-                },
-                error: "Something went wrong!"
-            }
-        );
+        // toast.promise();
 
         setIsSubmitting(false);
     }
-
-    if (loading)
-        return <p>Loading...</p>
 
     return (
         <div className="w-full border grid md:grid-cols-2 grid-cols-1 border-stone-400 bg-white">

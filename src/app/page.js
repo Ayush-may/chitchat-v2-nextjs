@@ -1,11 +1,31 @@
 "use client"
 import Mytabs from "@/components/Mytabs";
 import Navbar from "@/components/Navbar";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import { useEffect, useLayoutEffect, useState } from "react";
 
 export default function Home() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    router.prefetch("/chat");
+  }, []);
+
+  useLayoutEffect(() => {
+    const token = localStorage.getItem("token") || undefined;
+    setIsLoading(true);
+
+    if (token) {
+      router.push('/chat');
+    }
+    else {
+      setIsLoading(false);
+    }
+  }, [router]);
+
+  if (isLoading) return <p>Loading...</p>
+
   return (
     <>
       <main className="w-full h-full flex flex-col">

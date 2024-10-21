@@ -1,5 +1,6 @@
 import { ApolloServer } from "@apollo/server";
-import { typeDefs, resolvers } from "@/lib/graphql/schema";
+import typeDefs from "@/app/api/graphql/utility/typeDefs";
+import resolvers from "@/app/api/graphql/utility/resolver";
 import { startServerAndCreateNextHandler } from "@as-integrations/next";
 
 const apolloServer = new ApolloServer({
@@ -15,5 +16,4 @@ export const config = {
 
 const handler = startServerAndCreateNextHandler(apolloServer);
 
-export const GET = handler;
-export const POST = handler;
+export { handler as GET, handler as POST };

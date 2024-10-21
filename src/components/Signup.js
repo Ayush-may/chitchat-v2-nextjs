@@ -6,8 +6,11 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@apollo/client";
+import { CREATE_USER } from "@/app/api/queries/query";
 
 export default function Signup() {
+  const [createUser, { loading, data }] = useMutation(CREATE_USER);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register,
     handleSubmit,
@@ -29,19 +32,28 @@ export default function Signup() {
     const { username, password } = data;
 
     toast.promise(
-      axios.post("/api/user/sign-up", {
-        username, password
-      }),
+      createUser({
+        variables: {
+          username,
+          password
+        }
+      })
+      ,
       {
         loading: "Loading...",
-        success: (data) => {
-          if (data.statusText == "OK") {
-            reset();
-            router.push("/chat");
-          }
+        success: (res) => {
+          console.log(res.data.createUser);
+          const token = res.data.createUser.user.token;
+
+          if (!token)
+            throw new Error("");
+
+          localStorage.setItem("token", token);
+          router.push("/chat");
+
           return "User has been created successfully!";
         },
-        error: "Something went wrong!"
+        error: "An error occurred while processing your request. Please try again.",
       }
     );
 
