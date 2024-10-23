@@ -2,15 +2,16 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation } from "@apollo/client";
-import { GET_USER_BY_USERNAME } from "@/app/api/queries/query";
+import { useMutation } from "@apollo/client";
+import { LOGIN } from "@/lib/resolverClient";
+import { Loader2 } from "lucide-react";
 
 export default function Login() {
+    const [login, { data, loading }] = useMutation(LOGIN);
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const { register,
         handleSubmit,
         watch,
@@ -19,13 +20,38 @@ export default function Login() {
         } } = useForm();
     const router = useRouter();
 
-    const onSubmit = async (data) => {
-        setIsSubmitting(true);
+    useEffect(() => {
         router.prefetch('/chat');
+    }, [])
 
-        // toast.promise();
+    const onSubmit = async (data) => {
+        const { username, password } = data;
 
-        setIsSubmitting(false);
+        toast.promise(
+            login({
+                variables: {
+                    username: username.toLowerCase(),
+                    password
+                }
+            })
+            ,
+            {
+                loading: "Logging...",
+                success: ({ data }) => {
+                    const { token, uid } = data.login.user;
+
+                    if (!token)
+                        throw new Error();
+
+                    localStorage.setItem("token", token);
+                    localStorage.setItem("uid", uid);
+                    router.push("/chat");
+
+                    return "Logged in!"
+                },
+                error: "Something went wrong"
+            }
+        );
     }
 
     return (
@@ -57,8 +83,14 @@ export default function Login() {
                 <Button
                     type="submit"
                     className="rounded-none"
-                    disabled={isSubmitting}
-                >Login</Button>
+                    disabled={loading}
+                >
+                    {
+                        loading
+                            ? <Loader2 className="animate-spin" />
+                            : "Login"
+                    }
+                </Button>
             </form>
             <div className="overflow-hidden w-full h-full md:block hidden relative">
                 {/* <img src={"https://placehold.co/600x400"} className="object-cover w-full h-full" /> */}

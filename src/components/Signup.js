@@ -7,11 +7,13 @@ import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client";
-import { CREATE_USER } from "@/app/api/queries/query";
+import { CREATE_USER } from "@/lib/resolverClient";
+import { Loader2 } from "lucide-react";
+
 
 export default function Signup() {
   const [createUser, { loading, data }] = useMutation(CREATE_USER);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { register,
     handleSubmit,
     setError,
@@ -28,7 +30,6 @@ export default function Signup() {
   }, [])
 
   const onSubmit = async (data) => {
-    setIsSubmitting(true);
     const { username, password } = data;
 
     toast.promise(
@@ -42,13 +43,13 @@ export default function Signup() {
       {
         loading: "Loading...",
         success: (res) => {
-          console.log(res.data.createUser);
-          const token = res.data.createUser.user.token;
+          const { token, uid } = res.data.createUser.user;
 
           if (!token)
             throw new Error("");
 
           localStorage.setItem("token", token);
+          localStorage.setItem("uid", uid);
           router.push("/chat");
 
           return "User has been created successfully!";
@@ -56,37 +57,35 @@ export default function Signup() {
         error: "An error occurred while processing your request. Please try again.",
       }
     );
-
-    setIsSubmitting(false);
   }
 
-  useEffect(() => {
-    if (watch("username").length >= 5) {
-      let temp = setTimeout(async () => {
-        try {
-          let response = await axios.post("/api/user/check-username", {
-            username: watch("username")
-          });
+  // useEffect(() => {
+  // if (watch("username").length >= 5) {
+  //   let temp = setTimeout(async () => {
+  //     try {
+  //       let response = await axios.post("/api/user/check-username", {
+  //         username: watch("username")
+  //       });
 
-          clearErrors("username");
-          setIsSubmitting(false);
+  //       clearErrors("username");
+  //       setIsSubmitting(false);
 
-        } catch (error) {
+  //     } catch (error) {
 
-          setError("username", {
-            type: "manual",
-            message: "Username is already taken",
-          });
-          setIsSubmitting(true);
+  //       setError("username", {
+  //         type: "manual",
+  //         message: "Username is already taken",
+  //       });
+  //       setIsSubmitting(true);
 
-        }
-      }, 500);
+  //     }
+  //   }, 500);
 
-      return () => {
-        clearTimeout(temp);
-      }
-    }
-  }, [watch("username")]);
+  //   return () => {
+  //     clearTimeout(temp);
+  //   }
+  // }
+  // }, [watch("username")]);
 
   return (
     <div className="w-full max-h-fit border border-dark grid md:grid-cols-2 grid-cols-1  border-stone-400 bg-white">
@@ -122,7 +121,13 @@ export default function Signup() {
         />
         {errors.password && <Label className="-mt-4 text-sm text-red-500">{errors.password.message}</Label>}
 
-        <Button type="submit" className="rounded-none" disabled={isSubmitting}>{isSubmitting ? "Creating..." : "Create an account"}</Button>
+        <Button type="submit" className="rounded-none" disabled={loading}>
+          {
+            loading
+              ? <Loader2 className="animate-spin" />
+              : "Create an account"
+          }
+        </Button>
       </form>
       <div className="overflow-hidden order-1 w-full h-full md:block hidden relative">
         {/* <img src={"https://placehold.co/600x400"} className="object-cover object-center w-full h-full" /> */}
