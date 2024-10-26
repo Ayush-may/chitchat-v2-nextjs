@@ -11,7 +11,7 @@ const EmojiPopover = () => {
   return (
     <Popover className="bg-white">
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="outline" >
           <Smile className="h-5 w-5 text-gray-500" />
         </Button>
       </PopoverTrigger>

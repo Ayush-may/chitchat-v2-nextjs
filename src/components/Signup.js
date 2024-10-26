@@ -3,16 +3,32 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@apollo/client";
-import { CREATE_USER } from "@/lib/resolverClient";
+import axiosConfig from "@/lib/axiosConfig";
+import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "./QueryClientContainer";
 
+const createUser = async ({ username, password }) => {
+  try {
+    const res = await axiosConfig.post("/users/", {
+      username,
+      password
+    });
+
+    if (res.status !== 200)
+      throw new Error("User is not created!");
+
+    return res.data;
+  } catch (error) {
+    return Promise.reject(error.message);
+  }
+}
 
 export default function Signup() {
-  const [createUser, { loading, data }] = useMutation(CREATE_USER);
+  const createUserMutation = useMutation(createUser);
+  const { saveToken } = useAuth();
 
   const { register,
     handleSubmit,
@@ -30,72 +46,32 @@ export default function Signup() {
   }, [])
 
   const onSubmit = async (data) => {
-    const { username, password } = data;
-
     toast.promise(
-      createUser({
-        variables: {
-          username,
-          password
-        }
-      })
-      ,
+      createUserMutation.mutateAsync(data),
       {
         loading: "Loading...",
-        success: (res) => {
-          const { token, uid } = res.data.createUser.user;
-
-          if (!token)
-            throw new Error("");
-
+        success: ({ uid, token }) => {
+          localStorage.clear();
           localStorage.setItem("token", token);
           localStorage.setItem("uid", uid);
+          saveToken(token);
           router.push("/chat");
 
           return "User has been created successfully!";
         },
-        error: "An error occurred while processing your request. Please try again.",
-      }
-    );
+        error: "An error occurred while processing your request. Please try again."
+      });
   }
-
-  // useEffect(() => {
-  // if (watch("username").length >= 5) {
-  //   let temp = setTimeout(async () => {
-  //     try {
-  //       let response = await axios.post("/api/user/check-username", {
-  //         username: watch("username")
-  //       });
-
-  //       clearErrors("username");
-  //       setIsSubmitting(false);
-
-  //     } catch (error) {
-
-  //       setError("username", {
-  //         type: "manual",
-  //         message: "Username is already taken",
-  //       });
-  //       setIsSubmitting(true);
-
-  //     }
-  //   }, 500);
-
-  //   return () => {
-  //     clearTimeout(temp);
-  //   }
-  // }
-  // }, [watch("username")]);
 
   return (
     <div className="w-full max-h-fit border border-dark grid md:grid-cols-2 grid-cols-1  border-stone-400 bg-white">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="p-5 order-2 flex flex-col h-fit gap-5"
+        className="p-5 order-2 flex flex-col h-fit gap-2"
         autoComplete="off"
       >
         <Label className="text-3xl text-center font-bold uppercase">Sign up</Label>
-        <Label className="-mb-4 text-sm text-slate-700">Username</Label>
+        <Label className="-mb-2 text-sm text-slate-700">Username</Label>
         <Input
           type="text"
           id="username"
@@ -111,7 +87,7 @@ export default function Signup() {
         />
         {errors.username && <Label className="-mt-4 text-sm text-red-500">{errors.username.message}</Label>}
 
-        <Label className="-mb-4 text-sm text-slate-700">Password</Label>
+        <Label className="-mb-2 text-sm text-slate-700">Password</Label>
         <Input
           type="password"
           id="password"
@@ -121,9 +97,9 @@ export default function Signup() {
         />
         {errors.password && <Label className="-mt-4 text-sm text-red-500">{errors.password.message}</Label>}
 
-        <Button type="submit" className="rounded-none" disabled={loading}>
+        <Button type="submit" className="rounded-none" disabled={createUserMutation.isLoading}>
           {
-            loading
+            createUserMutation.isLoading
               ? <Loader2 className="animate-spin" />
               : "Create an account"
           }

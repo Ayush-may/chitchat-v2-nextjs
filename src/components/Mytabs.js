@@ -29,10 +29,10 @@ export default function Mytabs() {
                     className={`${handleCss("tab2")}`}
                     onClick={() => handleSelection("tab2")}
                 >Sign up</TabsTrigger>
-                <TabsTrigger value="forgetpassword"
+                {/* <TabsTrigger value="forgetpassword"
                     className={`${handleCss("tab3")}`}
                     onClick={() => handleSelection("tab3")}
-                >Forget Password</TabsTrigger>
+                >Forget Password</TabsTrigger> */}
             </TabsList>
             <TabsContent value="login">
                 <Login />

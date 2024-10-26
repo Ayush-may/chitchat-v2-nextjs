@@ -5,150 +5,138 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LogOut, Send, Search, Phone, Video, X, Image, Smile, Paperclip, Menu, ArrowLeft, UserPlus, Plus, Loader, Loader2 } from "lucide-react"
+import { LogOut, Send, Search, Phone, Video, X, Smile, Paperclip, Menu, ArrowLeft, UserPlus, Plus, Loader, Loader2 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useRouter } from 'next/navigation'
-import { useLazyQuery, useQuery } from '@apollo/client'
-import { USERS_NAME_UID } from '@/lib/resolverClient'
 import AddFriendButton from './components/AddFriendButton'
 import EmojiPopover from './components/EmojiPopover'
 import UserAvatar from './components/UserAvatar'
+import axiosConfig from '@/lib/axiosConfig'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import UserList from './components/UsersList'
+import { Label } from '@radix-ui/react-label'
+import MessagesCompo from './components/MessagesCompo'
+import { Textarea } from '@/components/ui/textarea'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import axios from 'axios'
+// import circleImage from "src/public/images/circle.png";
 
+const getAllUsers = async () => {
+  try {
+    const res = await axiosConfig.get("/users");
+    return res.data;
+  } catch (error) {
+    return error.message;
+  }
+}
+
+const getLoggedUserFriends = async (loggedUser) => {
+  try {
+    const res = await axiosConfig.get(`/users/friends/${loggedUser}`);
+    return res.data;
+  } catch (error) {
+    return error.message;
+  }
+}
+
+
+
+// COMPONENT
 export default function ChatInterface() {
-  const [getUsers, { data: userFrndData, loading: userFrndLoading }] = useLazyQuery(USERS_NAME_UID);
+  // const getAllUsersQuery = useQuery(["getAllUsers"], getAllUsers, {
+  //   refetchInterval: 5000,
+  //   staleTime: 0,
+  //   refetchOnWindowFocus: true,
+  //   refetchOnMount: true,
+  //   cacheTime: 1000,
+  // });
 
-  const [users, setUsers] = useState([]);
+  const [loggedUser, setLoggedUser] = useState(null);
+  const [users, setUsers] = useState(null);
   const [messages, setMessages] = useState([]);
-
-  useEffect(() => {
-    if (!userFrndLoading && !userFrndData) {
-      console.log("again");
-      getUsers();  // Only fetch the users if they are not already being loaded or available
-    }
-
-    if (userFrndData && !userFrndLoading) {
-      setUsers(userFrndData.getUsers.map((user) => ({
-        id: user.uid,
-        name: user.username,
-        avatar: `https://avatar.iran.liara.run/username?username=${user.username}+${user.username.charAt(user.username.length - 1)}`,
-        lastMessage: "Hey, how are you?",
-      })));
-    }
-  }, [userFrndLoading]);
-
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState(null);
   const [inputMessage, setInputMessage] = useState("")
   const [showUserList, setShowUserList] = useState(true)
   const scrollRef = useRef(null);
   const router = useRouter();
+  const screenRef = useRef(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      // console.log(scrollRef.current.scrollHeight);
-      // scrollRef.current.scrollTo({
-      //   bottom: scrollRef.current.scrollHeight,
-      //   behavior: 'smooth'
-      // });
+    setLoggedUser(localStorage.getItem("uid"));
+  }, []);
 
-      // scrollRef.current.scrollBottom = scrollRef.current.scrollHeight;
-      console.log(scrollRef.current.scrollTop);
-      console.log(scrollRef.current.scrollHeight);
+  const getLoggedUserFriendsQuery = useQuery(
+    ['getLoggedUserFriends', loggedUser],
+    () => getLoggedUserFriends(loggedUser),
+    {
+      refetchInterval: "20000",
+      refetchOnWindowFocus: true,
+      cacheTime: "10000",
+      enabled: !!loggedUser
     }
-  }, [messages])
+  );
 
-  const handleSelectUser = (user) => {
-    setSelectedUser(user)
-    setShowUserList(false)
-    setMessages([
-      { id: 1, text: `Hello, ${user.name}!`, sender: 'other', timestamp: '10:00 AM', type: 'text', read: true },
-      { id: 2, text: "Hi there! How are you?", sender: 'user', timestamp: '10:01 AM', type: 'text', read: true },
-      { id: 3, text: "I'm doing great, thanks for asking!", sender: 'other', timestamp: '10:02 AM', type: 'text', read: true },
-      { id: 4, text: "That's wonderful to hear. Any plans for the weekend?", sender: 'user', timestamp: '10:03 AM', type: 'text', read: true },
-      { id: 5, text: "/placeholder.svg?height=200&width=300", sender: 'other', timestamp: '10:04 AM', type: 'image', read: false },
-    ])
-  }
+  useEffect(() => {
+    if (loggedUser && Array.isArray(getLoggedUserFriendsQuery?.data)) {
+      const usersTemp = getLoggedUserFriendsQuery?.data
+        ?.map(user => ({
+          uid: user.uid,
+          username: user.username,
+          avatar: user.profile_pic,
+          status: user.status,
+          created_at: user.created_at,
+        }));
+      setUsers(usersTemp);
+    }
+  }, [loggedUser, getLoggedUserFriendsQuery.data]);
 
   const handleSendMessage = () => {
-    if (inputMessage.trim() !== "" && selectedUser) {
-      const newMessage = {
-        id: messages.length + 1,
-        text: inputMessage,
-        sender: 'user',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        type: 'text',
-        read: false
-      }
-      setMessages([...messages, newMessage])
-      setInputMessage("")
 
-      setUsers(users.map(user =>
-        user.id === selectedUser.id ? { ...user, lastMessage: inputMessage } : user
-      ))
-    }
   }
 
   const handleLogout = () => {
     localStorage.clear();
-    router.push("/");
+    router.replace("/");
   }
 
   const handleEmojiSelect = (emoji) => {
     setInputMessage(inputMessage + emoji)
   }
 
-  const handleMediaUpload = () => {
-    // This is a placeholder for media upload functionality
-    const imageUrl = "/placeholder.svg?height=200&width=300"
-    const newMessage = {
-      id: messages.length + 1,
-      text: imageUrl,
-      sender: 'user',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      type: 'image',
-      read: false
-    }
-    setMessages([...messages, newMessage])
+
+  const refetchAllAddedFriends = () => {
+    getLoggedUserFriendsQuery.refetch();
   }
 
-  const UserList = () => (
-    <ScrollArea className="flex-grow">
-      {users.map(user => (
-        <div
-          key={user.id}
-          className={`flex items-center space-x-4 p-4 hover:bg-gray-100 cursor-pointer transition-colors duration-200 ${selectedUser?.id === user.id ? 'bg-gray-100' : ''}`}
-          onClick={() => handleSelectUser(user)}
-        >
-          <UserAvatar user={user} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
-            <p className="text-sm text-gray-400 truncate">{user.lastMessage}</p>
-          </div>
-        </div>
-      ))}
-    </ScrollArea>
-  )
-
-
   return (
-    <div className="flex h-screen w-full overflow-hidden ">
+    <div ref={screenRef} className="flex h-full w-full overflow-hidden ">
       {/* Sidebar for larger screens */}
       {/* upper  */}
       <div className="hidden md:flex md:w-80 border-r flex-col shadow-md">
         <div className="p-4 bg-primary flex justify-between items-center bg-dark">
           <h2 className="text-white text-xl font-bold">Chats</h2>
-          <Button variant="destructive" size="icon" onClick={handleLogout}>
-            <LogOut className="h-5 w-5 text-primary text-white" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="destructive" size="icon" onClick={handleLogout}>
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Logout</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <div className="p-2">
           <div className="relative flex items-center ">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search chats" className="pl-8" />
-            {/* <AddFriendButton userFrnd={userFrnd} /> */}
+            <AddFriendButton loggedUser={loggedUser} refetchAllAddedFriends={refetchAllAddedFriends} />
           </div>
         </div>
-        <UserList />
+        <UserList users={users} setSelectedUser={setSelectedUser} />
       </div>
 
       {/* Main area (user list or chat) for small screens */}
@@ -158,9 +146,18 @@ export default function ChatInterface() {
             <>
               <div className="p-4 bg-primary flex justify-between items-center">
                 <h2 className="text-primary-foreground text-xl font-bold">Chats</h2>
-                <Button variant="ghost" size="icon" onClick={handleLogout}>
-                  <LogOut className="h-5 w-5 text-primary-foreground" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" onClick={handleLogout}>
+                        <LogOut className="h-5 w-5 text-primary-foreground" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Logout</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
               <div className="p-2">
                 <div className="relative">
@@ -180,42 +177,13 @@ export default function ChatInterface() {
                       <ArrowLeft className="h-5 w-5 text-primary-foreground" />
                     </Button>
                     <Avatar>
-                      <AvatarImage src={selectedUser.avatar} alt={selectedUser.name} />
-                      <AvatarFallback>{selectedUser.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage src={selectedUser.avatar} alt={selectedUser.username} />
+                      {/* <AvatarFallback>{selectedUser.username}</AvatarFallback> */}
                     </Avatar>
                     <h1 className="text-primary-foreground text-xl font-bold">{selectedUser.name}</h1>
                   </div>
                 </div>
-                <ScrollArea className="flex-grow p-4 bg-gray-50">
-                  {/* {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"
-                        }`}
-                    >
-                      <div
-                        className={`inline-block p-2 rounded-lg ${message.sender === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-white text-gray-800 border border-gray-200"
-                          }`}
-                      >
-                        {message.type === 'text' ? (
-                          message.text
-                        ) : (
-                          <img src={message.text} alt="Shared image" className="max-w-xs rounded-lg" />
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {message.timestamp}
-                        {message.sender === 'user' && (
-                          <span className="ml-2">
-                            {message.read ? '✓✓' : '✓'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))} */}
-                </ScrollArea>
+
                 <div className="p-4 bg-gray-100">
                   <div className="flex space-x-2 items-center">
                     <EmojiPopover />
@@ -244,70 +212,47 @@ export default function ChatInterface() {
 
       {/* Main chat area for larger screens */}
       <div className="hidden md:flex md:flex-1 flex-col bg-white">
-        {selectedUser ? (
-          <>
-            <div className="bg-primary p-4 flex items-center justify-between shadow-md">
-              <div className="flex items-center space-x-4">
-                <Avatar>
-                  <AvatarImage src={selectedUser.avatar} alt={selectedUser.name} />
-                  <AvatarFallback>{selectedUser.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <h1 className="text-primary-foreground text-xl font-bold">{selectedUser.name}</h1>
+        {
+          selectedUser ?
+            <>
+              {/* nav */}
+              <div className='bg-secondary flex w-full border-2 border-back p-2 items-center'>
+                <div className='flex items-center'>
+                  <Popover>
+                    <PopoverTrigger className='flex items-center cursor-pointer hover:bg-gray-200 px-3 py-2 rounded-md select-none'>
+                      <UserAvatar user={selectedUser} />
+                      <Label className='font-bold ms-2 text-stone-800 cursor-pointer'>{selectedUser.username}</Label>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <div className='flex flex-col gap-2 items-center'>
+                        <UserAvatar width={124} height={124} user={selectedUser} />
+                        <Label className='font-bold ms-2 text-stone-800 '>{selectedUser.username.toUpperCase()}</Label>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
-            </div>
-            <ScrollArea className="flex-1 p-4 bg-gray-50 border-2 border-red-500" ref={scrollRef}>
-              <div ref={scrollRef}>
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"
-                      }`}
-                  >
-                    <div
-                      className={`inline-block p-2 rounded-lg ${message.sender === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-white text-gray-800 border border-gray-200"
-                        }`}
-                    >
-                      {message.type === 'text' ? (
-                        message.text
-                      ) : (
-                        <img src={message.text} alt="Shared image" className="max-w-xs rounded-lg" />
-                      )}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      {message.timestamp}
-                      {message.sender === 'user' && (
-                        <span className="ml-2">
-                          {message.read ? '✓✓' : '✓'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-            <div className="p-4 bg-gray-100">
-              <div className="flex space-x-2 items-center">
+              {/* center part */}
+              {/* <ScrollArea className="px-2 flex-grow gap-2 relative"> */}
+              <MessagesCompo selectedUser={selectedUser} loggedUid={loggedUser} />
+              {/* </ScrollArea> */}
+              {/* input area */}
+              {/* <div className='border p-2 flex gap-2'>
                 <EmojiPopover />
-                <Input
-                  placeholder="Type a message"
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  className="flex-grow"
-                />
-                <Button onClick={handleSendMessage}>
-                  <Send className="h-4 w-4" />
+                <Input type="text" className="rounded" placeholder="Type your message here..." />
+                <Button className="rounded-md w-fit" size="">
+                  <Send className='h-4 w-4 text-gray-300' />
+                  <Label className='ms-2'>Send</Label>
                 </Button>
+              </div> */}
+            </>
+            :
+            <>
+              <div className="flex-grow flex items-center justify-center bg-gray-50">
+                <p className="text-muted-foreground">Select a chat to start messaging</p>
               </div>
-            </div>
-          </>
-        ) : (
-          <div className="flex-grow flex items-center justify-center bg-gray-50">
-            <p className="text-muted-foreground">Select a chat to start messaging</p>
-          </div>
-        )}
+            </>
+        }
       </div>
     </div>
   )
