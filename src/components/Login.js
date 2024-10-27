@@ -2,14 +2,14 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useForm } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import axiosConfig from "@/lib/axiosConfig";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
 import { useAuth } from "./QueryClientContainer";
+import { IsLoggingContext } from "@/app/page";
 
 const loginUser = async ({ username, password }) => {
   try {
@@ -23,13 +23,15 @@ const loginUser = async ({ username, password }) => {
 
     return res.data;
   } catch (error) {
-    toast.error(error.message);
+    return Promise.reject();
   }
 }
 
+// COMPONENT
 export default function Login() {
   const loginMutation = useMutation(loginUser);
   const { saveToken } = useAuth();
+  const { setIsLogging } = useContext(IsLoggingContext);
 
   const { register,
     handleSubmit,
@@ -44,6 +46,7 @@ export default function Login() {
   }, [])
 
   const onSubmit = async (data) => {
+    setIsLogging(true);
     toast.promise(
       loginMutation.mutateAsync(data)
       ,
@@ -53,13 +56,16 @@ export default function Login() {
           localStorage.clear();
           localStorage.setItem("token", token);
           localStorage.setItem("uid", uid);
+
           saveToken(token);
-          // router.push("/chat");
           router.replace("/chat");
 
           return "Logged in!"
         },
-        error: "Something went wrong"
+        error: () => {
+          setIsLogging(false);
+          return "An error occurred while processing your login request. Please try again or refresh page."
+        }
       }
     );
   }

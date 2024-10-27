@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import axiosConfig from "@/lib/axiosConfig";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "./QueryClientContainer";
+import axiosConfig from "@/lib/axiosConfig";
 
 const createUser = async ({ username, password }) => {
   try {
@@ -32,10 +32,6 @@ export default function Signup() {
 
   const { register,
     handleSubmit,
-    setError,
-    watch,
-    reset,
-    clearErrors,
     formState: {
       errors
     } } = useForm();
@@ -59,7 +55,7 @@ export default function Signup() {
 
           return "User has been created successfully!";
         },
-        error: "An error occurred while processing your request. Please try again."
+        error: "An error occurred while processing your login request. Please try again or refresh page."
       });
   }
 
@@ -67,11 +63,11 @@ export default function Signup() {
     <div className="w-full max-h-fit border border-dark grid md:grid-cols-2 grid-cols-1  border-stone-400 bg-white">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="p-5 order-2 flex flex-col h-fit gap-2"
+        className="p-5 order-2 flex flex-col gap-2 border h-full"
         autoComplete="off"
       >
         <Label className="text-3xl text-center font-bold uppercase">Sign up</Label>
-        <Label className="-mb-2 text-sm text-slate-700">Username</Label>
+        <Label className="-mb-1 text-sm text-slate-700">Username</Label>
         <Input
           type="text"
           id="username"
@@ -85,9 +81,9 @@ export default function Signup() {
             }
           })}
         />
-        {errors.username && <Label className="-mt-4 text-sm text-red-500">{errors.username.message}</Label>}
+        {errors.username && <Label className="text-sm text-red-500">{errors.username.message}</Label>}
 
-        <Label className="-mb-2 text-sm text-slate-700">Password</Label>
+        <Label className="-mb-1 text-sm text-slate-700 mt-3">Password</Label>
         <Input
           type="password"
           id="password"
@@ -95,9 +91,9 @@ export default function Signup() {
           className="bg-stone-100 border-blue-200 rounded-none"
           {...register('password', { required: "Password is required" })}
         />
-        {errors.password && <Label className="-mt-4 text-sm text-red-500">{errors.password.message}</Label>}
+        {errors.password && <Label className="text-sm text-red-500">{errors.password.message}</Label>}
 
-        <Button type="submit" className="rounded-none" disabled={createUserMutation.isLoading}>
+        <Button type="submit" className="rounded-none mt-3" disabled={createUserMutation.isLoading}>
           {
             createUserMutation.isLoading
               ? <Loader2 className="animate-spin" />

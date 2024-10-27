@@ -7,7 +7,6 @@ import axiosConfig from "@/lib/axiosConfig"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { memo, useEffect, useState } from "react"
-import { useAuth } from "@/components/QueryClientContainer"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 const addToFriend = async ({ frnduid, loggedUser }) => {
@@ -72,7 +71,7 @@ const AddFriendButton = memo(({ loggedUser, refetchAllAddedFriends }) => {
 
 
   return (
-    <Dialog>
+    <Dialog className="mx-10 text-start">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -87,7 +86,7 @@ const AddFriendButton = memo(({ loggedUser, refetchAllAddedFriends }) => {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <DialogContent className="max-h-[50%]">
+      <DialogContent className="max-h-[50%] text-start max-w-80 md:max-w-xl rounded-md">
         <DialogHeader>
           <DialogTitle>Add Friend</DialogTitle>
           <DialogDescription>Select users from the list below to start your conversation.</DialogDescription>

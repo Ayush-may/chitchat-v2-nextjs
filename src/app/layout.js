@@ -24,11 +24,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryClientContainer>
           {children}
-          <Toaster richColors closeButton expand={false} duration={3000} position="top-center" S />
+          <Toaster className="hidden md:block" richColors closeButton expand={false} duration={3000} position="bottom-right" />
+          <Toaster className="md:hidden" richColors closeButton expand={false} duration={3000} position="bottom-right" />
         </QueryClientContainer>
       </body>
     </html>
