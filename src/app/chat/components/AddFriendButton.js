@@ -31,7 +31,7 @@ const getAllLoggedUserNoFriends = async (loggedUser) => {
 }
 
 // COMPONENT HERE
-const AddFriendButton = memo(({ loggedUser, refetchAllAddedFriends }) => {
+const AddFriendButton = ({ loggedUser, refetchAllAddedFriends }) => {
   const addToFriendMutation = useMutation(addToFriend, {
     onSuccess: () => getAllLoggedUserNoFriendsQuery.refetch()
   });
@@ -126,6 +126,6 @@ const AddFriendButton = memo(({ loggedUser, refetchAllAddedFriends }) => {
       </DialogContent>
     </Dialog>
   )
-})
+}
 
 export default AddFriendButton;

@@ -84,6 +84,7 @@ const MessagesCompo = ({ selectedUser, loggedUid }) => {
 
       return (
        < MessageBox
+        key={message.mid}
         text={message.text}
         selectedUser={selectedUser}
         avatar={avatar}
