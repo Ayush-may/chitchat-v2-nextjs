@@ -9,35 +9,34 @@ const UserList = ({ users, setSelectedUser }) => {
     return <p>No users found</p>;
   }
 
+
   const router = useRouter();
 
-
   return (
-    <ScrollArea className="flex-grow overflow-y-scroll">
+    <div className="flex-grow overflow-y-scroll scroll-smooth">
       {users.map(user => (
         <div
           key={user.uid}
           className={`flex items-center space-x-4 p-4 hover:bg-gray-100 cursor-pointer transition-colors duration-200`}
-          // ${user?.uid && selectedUser?.uid === user?.uid ? 'bg-gray-100' : ''}
-          // onClick={() => handleSelectUser(user)}
-          onMouseOver={() => {
-            router.prefetch(`/chat/${user.uid}`);
-          }}
 
           onClick={() => {
             setSelectedUser(user);
-            // router.push(`chat/${user.uid}`);
           }}
-
         >
           <UserAvatar user={user} />
+          {
+            console.log(user)
+          }
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">{user?.username}</p>
             <p className="text-sm text-gray-400 truncate">todo</p>
           </div>
+          {
+            user.is_online == "online" && <div className="w-2 h-2 bg-green-400 rounded-full" ></div>
+          }
         </div>
       ))}
-    </ScrollArea>
+    </div>
   )
 }
 

@@ -51,44 +51,50 @@ const MessagesCompo = ({ selectedUser, loggedUid }) => {
   const [messages, setMessages] = useState([]);
   const [inputFieldText, setInputFieldText] = useState("")
   const inputRef = useRef(null);
+  const dummy = useRef(null);
 
   useEffect(() => {
     setMessages([]);
 
-    if (selectedUser && !getLoggedUserAndSelectedUserMessagesQuery.isLoading && Array.isArray(getLoggedUserAndSelectedUserMessagesQuery.data)) {
+    if (selectedUser && !getLoggedUserAndSelectedUserMessagesQuery.isLoading && Array.isArray(getLoggedUserAndSelectedUserMessagesQuery.data))
       setMessages(getLoggedUserAndSelectedUserMessagesQuery.data);
-      console.log(getLoggedUserAndSelectedUserMessagesQuery.data);
-    } else
+    else
       setMessages([]);
 
+    dummy.current.scrollIntoView({ behaviour: "smooth" });
   }, [loggedUid, selectedUser.uid, getLoggedUserAndSelectedUserMessagesQuery.isLoading, getLoggedUserAndSelectedUserMessagesQuery.data]);
 
   return (
     <>
-      <ScrollArea className="px-2 flex-grow gap-2 relative">
+      <div className="px-2 pt-5 flex-grow flex flex-col gap-2 pb-5 relative overflow-y-scroll scroll-smooth">
         {
           Array.isArray(messages)
-          &&
-          messages.map(message => {
+          && messages.length > 0
+          && messages.map((message, index) => {
             let avatar = null;
-            if (message.senderData.uid == loggedUid) {
-              avatar = message.senderData.profile_pic;
+            let username = null;
+
+            if (message.sender == selectedUser.uid) {
+              avatar = message.senderData?.profile_pic;
+              username = message.senderData.username;
             }
             else {
-              avatar = message.recieverData.profile_pic;
+              avatar = message.senderData.profile_pic;
+              username = "You";
             }
 
             return (
               < MessageBox
-                key={message.mid}
                 text={message.text}
                 selectedUser={selectedUser}
                 avatar={avatar}
-              />
+                username={username} />
             )
           })
         }
-      </ScrollArea>
+        {/* one extra box */}
+        <div ref={dummy} className="flex-shrink-0 h-[100px]"></div>
+      </div>
       <div className='border p-2 flex gap-2'>
         <EmojiPopover />
         <Input
@@ -105,7 +111,10 @@ const MessagesCompo = ({ selectedUser, loggedUid }) => {
                 text: inputFieldText,
                 selectedUid: selectedUser.uid,
               });
+
               setInputFieldText("");
+
+              dummy.current.scrollIntoView({ behaviour: "smooth" });
             }
           }}
         />

@@ -87,38 +87,40 @@ const AddFriendButton = memo(({ loggedUser, refetchAllAddedFriends }) => {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <DialogContent className="h-[80%]">
+      <DialogContent className="max-h-[50%]">
         <DialogHeader>
           <DialogTitle>Add Friend</DialogTitle>
           <DialogDescription>Select users from the list below to start your conversation.</DialogDescription>
         </DialogHeader>
         <div className="grid w-full h-full overflow-hidden">
-          <ScrollArea className="w-full ">
-            {users.map((user) => {
-              return (
-                <div
-                  key={user.uid}
-                  className='flex items-center gap-3 p-2 hover:bg-gray-100 transition-colors duration-300 rounded-md'>
-                  <Avatar>
-                    <AvatarImage src={user.profile_pi} alt={user.username} />
-                    <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 text-sm font-medium text-gray-900 truncate">{user.username}</div>
-                  <div title='Add to friend'>
-                    {addToFriendMutation.isLoading
-                      ?
-                      <Loader2 className="aniamate-spin" />
-                      :
-                      <Button variant='outline' size='icon' className='me-2'>
-                        <Plus
-                          className='w-5 h-5'
-                          onClick={() => handleAddFriend(user.uid)} />
-                      </Button>
-                    }
+          <ScrollArea className=" ">
+            {
+              Array.isArray(users) &&
+              users.map((user) => {
+                return (
+                  <div
+                    key={user.uid}
+                    className='flex items-center gap-3 p-2 hover:bg-gray-100 transition-colors duration-300 rounded-md'>
+                    <Avatar>
+                      <AvatarImage src={user.profile_pi} alt={user.username} />
+                      <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 text-sm font-medium text-gray-900 truncate">{user.username}</div>
+                    <div title='Add to friend'>
+                      {addToFriendMutation.isLoading
+                        ?
+                        <Loader2 className="aniamate-spin" />
+                        :
+                        <Button variant='outline' size='icon' className='me-2'>
+                          <Plus
+                            className='w-5 h-5'
+                            onClick={() => handleAddFriend(user.uid)} />
+                        </Button>
+                      }
+                    </div>
                   </div>
-                </div>
-              )
-            })
+                )
+              })
             }
           </ScrollArea>
         </div>
