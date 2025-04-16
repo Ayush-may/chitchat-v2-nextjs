@@ -18,7 +18,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { useSocketIo } from '@/hooks/useSocketIo'
+import { io } from 'socket.io-client'
 
+// returns friend list
 const getLoggedUserFriends = async (loggedUser) => {
   try {
     const res = await axiosConfig.get(`/users/friends/${loggedUser}`);
@@ -49,16 +51,19 @@ export default function ChatInterface() {
   const scrollRef = useRef(null);
   const router = useRouter();
   const screenRef = useRef(null);
-  const io = useSocketIo()
+  // const io = useSocketIo()
 
-  // This is not emiting the welcome 
+  const socketio = io("ws://localhost:8000")
+
   useEffect(() => {
     const uid = localStorage.getItem("uid");
-    if (!io.current || !uid) return;
 
-    io.current.emit('welcome', { uid });
-    console.log('welcome emitted');
-  }, [io.current])
+    socketio.emit('welcome', { uid })
+
+    return () => {
+      socketio.disconnect();
+    };
+  }, [socketio])
 
   useEffect(() => {
     setLoggedUser(localStorage.getItem("uid"));
@@ -74,9 +79,9 @@ export default function ChatInterface() {
     ['getLoggedUserFriends', loggedUser],
     () => getLoggedUserFriends(loggedUser),
     {
-      refetchInterval: "2000",
+      refetchInterval: 5000,
       refetchOnWindowFocus: true,
-      cacheTime: "1000",
+      cacheTime: 4000,
       enabled: !!loggedUser
     }
   );
@@ -101,15 +106,26 @@ export default function ChatInterface() {
     setIsLogOut(true);
     localStorage.clear();
 
-    toast
-      .promise(
-        changeOnlineStatusToOfflineMutation.mutateAsync(loggedUser),
-        {
-          loading: "Logging out...",
-          success: "Logged-Off",
-          error: "unable to logged-Off"
-        }
-      )
+    socketio.emit('logout', {
+      uid: loggedUser
+    })
+    toast.success("Logged out")
+
+    // toast
+    //   .promise(
+    //     changeOnlineStatusToOfflineMutation.mutateAsync(loggedUser),
+    //     {
+    //       loading: "Logging out...",
+    //       success: () => {
+    //         io.emit('logout', {
+    //           uid: loggedUid
+    //         })
+
+    //         return "logged Out"
+    //       },
+    //       error: "unable to logged-Off"
+    //     }
+    //   )
 
     router.replace("/");
   }

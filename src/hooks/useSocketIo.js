@@ -10,7 +10,7 @@ export function useSocketIo() {
   socketRef.current = io(SOCKET_SERVER_URL);
 
   socketRef.current.on('connect', () => {
-   console.log('Connected to server');
+   alert('Connected to server');
   });
 
   return () => {

@@ -18,11 +18,12 @@ const loginUser = async ({ username, password }) => {
       username,
       password
     });
-    if (res.status !== 200)
+    if (res.status !== 200) {
       throw new Error("Something went wrong!");
-
+    }
     return res.data;
   } catch (error) {
+    console.log(error)
     return Promise.reject();
   }
 }

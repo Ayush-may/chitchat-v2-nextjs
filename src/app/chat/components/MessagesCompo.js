@@ -17,6 +17,7 @@ const getLoggedUserAndSelectedUserMessages = async ({ loggedUid, selectedUid }) 
   }
 }
 
+
 const handleSendMessageFromLoggedToSelectedUser = async ({ loggedUid, selectedUid, text }) => {
   try {
     const res = await axiosConfig.post(`/users/${loggedUid}/messages/${selectedUid}`, {
@@ -30,18 +31,20 @@ const handleSendMessageFromLoggedToSelectedUser = async ({ loggedUid, selectedUi
 
 // COMPONENT
 const MessagesCompo = ({ selectedUser, loggedUid, setUsers }) => {
+
+  // Reacy query- Runs every time
   const getLoggedUserAndSelectedUserMessagesQuery = useQuery(
     ['getLoggedUserAndSelectedUserMessages', loggedUid, selectedUser?.uid],
     () => {
       const selectedUid = selectedUser.uid;
       return getLoggedUserAndSelectedUserMessages({ loggedUid, selectedUid })
     },
-    {
-      enabled: !!loggedUid && !!selectedUser.uid,
-      staleTime: 0,
-      refetchInterval: 100,
-      refetchIntervalInBackground: true
-    }
+    // {
+    //   enabled: !!loggedUid && !!selectedUser.uid,
+    //   staleTime: 0,
+    //   refetchInterval: 100,
+    //   refetchIntervalInBackground: true
+    // }
   );
   const handleSendMessageFromLoggedToSelectedUserMutation = useMutation(handleSendMessageFromLoggedToSelectedUser, {
     onSuccess: () => { getLoggedUserAndSelectedUserMessagesQuery.refetch() },
@@ -55,10 +58,17 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers }) => {
   useEffect(() => {
     setMessages([]);
 
-    if (selectedUser && !getLoggedUserAndSelectedUserMessagesQuery.isLoading && Array.isArray(getLoggedUserAndSelectedUserMessagesQuery.data))
-      setMessages(getLoggedUserAndSelectedUserMessagesQuery.data);
-    else
+    if (
+      selectedUser &&
+      !getLoggedUserAndSelectedUserMessagesQuery.isLoading &&
+      Array.isArray(getLoggedUserAndSelectedUserMessagesQuery.data
+      )){
+        console.log(getLoggedUserAndSelectedUserMessagesQuery)
+        setMessages(getLoggedUserAndSelectedUserMessagesQuery.data);
+      }
+    else{
       setMessages([]);
+    }
 
     dummy.current.scrollIntoView({ behaviour: "smooth" });
   }, [loggedUid, selectedUser.uid, getLoggedUserAndSelectedUserMessagesQuery.isLoading, getLoggedUserAndSelectedUserMessagesQuery.data]);
