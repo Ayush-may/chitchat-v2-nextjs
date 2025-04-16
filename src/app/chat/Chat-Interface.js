@@ -51,19 +51,22 @@ export default function ChatInterface() {
   const scrollRef = useRef(null);
   const router = useRouter();
   const screenRef = useRef(null);
-  // const io = useSocketIo()
+  const io = useSocketIo()
 
-  const socketio = io("ws://localhost:8000")
+  // const socketio = io("ws://localhost:8000")
 
   useEffect(() => {
     const uid = localStorage.getItem("uid");
 
-    socketio.emit('welcome', { uid })
+    // socketio.emit('welcome', { uid })
+    io.current.emit('welcome', { uid })
+
 
     return () => {
-      socketio.disconnect();
+      // socketio.disconnect();
+      io.current.disconnect();
     };
-  }, [socketio])
+  }, [io.current])
 
   useEffect(() => {
     setLoggedUser(localStorage.getItem("uid"));
@@ -106,7 +109,8 @@ export default function ChatInterface() {
     setIsLogOut(true);
     localStorage.clear();
 
-    socketio.emit('logout', {
+    // socketio.emit('logout', {
+    io.current.emit('logout', {
       uid: loggedUser
     })
     toast.success("Logged out")
