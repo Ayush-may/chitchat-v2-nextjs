@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NavLink from "./NavLink"
 import { Button } from "./ui/button";
 import { AlignJustify } from "lucide-react";
@@ -10,12 +10,16 @@ import Sidebar from "./Sidebar";
 export default function Navbar() {
     const [isShow, setIsShow] = useState(false);
 
+    useEffect(() => {
+        document.title = "SIMPLE CHAT APP | 8th Semester Major Project"
+    }, [])
+
     return (
         <>
 
             <nav className="md:flex p-5 items-center justify-between shadow-lg px-10 py-6 relative">
                 <div className="flex justify-between w-full">
-                    <h1 className="font-bold text-2xl md:text-4xl">SocialMedia.</h1>
+                    <h1 className="font-bold text-2xl md:text-4xl">SIMPLE CHAT APP</h1>
                     <div className="md:flex hidden items-center">
                         <NavLink href={"/"}>Home</NavLink>
                         <NavLink href={"/about-us"}>About us</NavLink>

@@ -14,7 +14,7 @@ import { IsLoggingContext } from "@/app/page";
 const loginUser = async ({ username, password }) => {
   try {
     console.log(username, password);
-    const res = await axiosConfig.post("http://localhost:8000/api/users/login", {
+    const res = await axiosConfig.post("/users/login", {
       username,
       password
     });
