@@ -12,7 +12,7 @@ import axiosConfig from "@/lib/axiosConfig";
 
 const createUser = async ({ username, password }) => {
   try {
-    const res = await axiosConfig.post("/users/", {
+    const res = await axiosConfig.post("users/", {
       username,
       password
     });
