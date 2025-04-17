@@ -1,7 +1,7 @@
 import UserAvatar from "./UserAvatar";
 import { Label } from "@/components/ui/label";
 
-const UserList = ({ users, setSelectedUser, setShowUserList }) => {
+const UserList = ({ users, setSelectedUser, setShowUserList, io }) => {
  if (!users || users.length === 0) {
   return <Label className="text-center text-gray-400 text-md w-full">No users found</Label>
  }
@@ -15,6 +15,11 @@ const UserList = ({ users, setSelectedUser, setShowUserList }) => {
      onClick={() => {
       setSelectedUser(user);
       setShowUserList(false);
+
+      if (io.current) {
+       io.current.emit('connected_with_user', { withId: user.uid })
+      }
+      
      }}
     >
      <UserAvatar user={user} />

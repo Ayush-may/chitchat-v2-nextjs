@@ -18,7 +18,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { useSocketIo } from '@/hooks/useSocketIo'
-import { io } from 'socket.io-client'
+
 
 // returns friend list
 const getLoggedUserFriends = async (loggedUser) => {
@@ -61,6 +61,10 @@ export default function ChatInterface() {
     // socketio.emit('welcome', { uid })
     if (io.current) {
       io.current.emit('welcome', { uid })
+
+      // io.current.on('notification_send', (data) => {
+      //   alert("incoming message")
+      // })
     }
 
     // return () => {
@@ -187,7 +191,7 @@ export default function ChatInterface() {
                   </Button>
                 </div>
                 <div className='w-full h-full flex '>
-                  <UserList users={users} setShowUserList={setShowUserList} setSelectedUser={setSelectedUser} />
+                  <UserList users={users} setShowUserList={setShowUserList} setSelectedUser={setSelectedUser} io={io} />
                 </div>
               </div>
 
