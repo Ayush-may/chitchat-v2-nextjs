@@ -59,14 +59,15 @@ export default function ChatInterface() {
     const uid = localStorage.getItem("uid");
 
     // socketio.emit('welcome', { uid })
-    io.current.emit('welcome', { uid })
+    if (io.current) {
+      io.current.emit('welcome', { uid })
+    }
 
-
-    return () => {
-      // socketio.disconnect();
-      io.current.disconnect();
-    };
-  }, [io.current])
+    // return () => {
+    //   // socketio.disconnect();
+    //   io.current.disconnect();
+    // };
+  }, [])
 
   useEffect(() => {
     setLoggedUser(localStorage.getItem("uid"));
@@ -106,13 +107,16 @@ export default function ChatInterface() {
   }, [loggedUser, getLoggedUserFriendsQuery.data]);
 
   const handleLogout = async () => {
+
+    if (io.current) {
+      io.current.emit('logout_user', {
+        uid: loggedUser
+      })
+    }
     setIsLogOut(true);
     localStorage.clear();
 
     // socketio.emit('logout', {
-    io.current.emit('logout', {
-      uid: loggedUser
-    })
     toast.success("Logged out")
 
     // toast
@@ -246,7 +250,7 @@ export default function ChatInterface() {
                       </div>
 
                       {/* message and input area */}
-                      <MessagesCompo selectedUser={selectedUser} loggedUid={loggedUser} />
+                      <MessagesCompo io={io} selectedUser={selectedUser} loggedUid={loggedUser} setUsers={setUsers} />
 
                     </>
                   ) : (
@@ -279,7 +283,7 @@ export default function ChatInterface() {
                       </div>
                     </div>
                     {/* center part */}
-                    <MessagesCompo selectedUser={selectedUser} setUsers={setUsers} loggedUid={loggedUser} />
+                    <MessagesCompo io={io} selectedUser={selectedUser} setUsers={setUsers} loggedUid={loggedUser} />
                   </>
                   :
                   <>

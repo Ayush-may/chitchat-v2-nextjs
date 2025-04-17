@@ -11,7 +11,7 @@ const MessageBox = ({ selectedUser, text, avatar, username }) => {
           ?
           <>
             <div className="align-self-start -mt-4 flex flex-col">
-              <Label className=' text-[10px] text-end w-full font-bold uppercase mb-1'>{username}</Label>
+              {/* <Label className=' text-[10px] text-end w-full font-bold uppercase mb-1'>{username}</Label> */}
               <p className='w-fit h-fit max-w-xl text-sm bg-stone-200 rounded-md py-2 px-5'>
                 {text}
               </p>
@@ -32,7 +32,7 @@ const MessageBox = ({ selectedUser, text, avatar, username }) => {
               </Avatar>
             </div>
             <div className="align-self-start -mt-4">
-              <Label className=' text-[10px] font-bold uppercase '>{username}</Label>
+              {/* <Label className=' text-[10px] font-bold uppercase '>{username}</Label> */}
               <p className='text-sm bg-blue-200 rounded-md p-1.5'>
                 {text}
               </p>

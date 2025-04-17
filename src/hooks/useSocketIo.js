@@ -1,20 +1,24 @@
 import { useEffect, useRef } from "react";
 import { io } from 'socket.io-client';
 
-const SOCKET_SERVER_URL = 'http://localhost:8000';
+const SOCKET_SERVER_URL = 'http://localhost:8080';
 
 export function useSocketIo() {
- const socketRef = useRef();
+ const socketRef = useRef(null);
 
  useEffect(() => {
-  socketRef.current = io(SOCKET_SERVER_URL);
+  if (!socketRef.current) {
+   socketRef.current = io(SOCKET_SERVER_URL);
+  }
 
   socketRef.current.on('connect', () => {
-   alert('Connected to server');
+   console.log('Connected to server');
   });
 
   return () => {
-   socketRef.current.disconnect();
+   if (socketRef.current) {
+    socketRef.current.disconnect();
+   }
   };
  }, []);
 
