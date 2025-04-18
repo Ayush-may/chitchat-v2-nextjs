@@ -53,8 +53,6 @@ export default function ChatInterface() {
   const screenRef = useRef(null);
   const io = useSocketIo()
 
-  // const socketio = io("ws://localhost:8000")
-
   useEffect(() => {
     const uid = localStorage.getItem("uid");
 
@@ -62,10 +60,10 @@ export default function ChatInterface() {
     if (io.current) {
       io.current.emit('welcome', { uid })
 
-      // io.current.on('notification_send', (data) => {
-      //   alert("incoming message")
-      // })
     }
+    io.current.on('notification_send', (data) => {
+      alert("incoming message")
+    })
 
     // return () => {
     //   // socketio.disconnect();

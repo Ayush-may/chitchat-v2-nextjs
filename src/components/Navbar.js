@@ -19,7 +19,7 @@ export default function Navbar() {
 
             <nav className="md:flex p-5 items-center justify-between shadow-lg px-10 py-6 relative">
                 <div className="flex justify-between w-full">
-                    <h1 className="font-bold text-2xl md:text-4xl">SIMPLE CHAT APP</h1>
+                    <h1 className="font-bold text-2xl md:text-4xl">NexTChat</h1>
                     <div className="md:flex hidden items-center">
                         <NavLink href={"/"}>Home</NavLink>
                         <NavLink href={"/about-us"}>About us</NavLink>
