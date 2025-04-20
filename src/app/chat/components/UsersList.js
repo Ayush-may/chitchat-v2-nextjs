@@ -11,15 +11,15 @@ const UserList = ({ users, setSelectedUser, setShowUserList, io }) => {
    {users.map(user => (
     <div
      key={user.uid}
-     className={`flex items-center space-x-4 p-4 hover:bg-gray-100 cursor-pointer transition-colors duration-200`}
+     className={`flex items-center space-x-4 p-4 hover:bg-gray-100 cursor-pointer transition-colors duration-200 border-0 border-b`}
      onClick={() => {
       setSelectedUser(user);
       setShowUserList(false);
 
       if (io.current) {
-       io.current.emit('connected_with_user', { withId: user.uid })
+       io.current.emit('selected_user', { selectedUserId: user.uid })
       }
-      
+
      }}
     >
      <UserAvatar user={user} />
@@ -30,6 +30,7 @@ const UserList = ({ users, setSelectedUser, setShowUserList, io }) => {
      {
       user.is_online == "online" && <div className="w-2 h-2 bg-green-400 rounded-full" ></div>
      }
+     <div className="px-1 bg-blue-400 rounded-full text-black text-sm" >1</div>
     </div>
    ))}
   </div>

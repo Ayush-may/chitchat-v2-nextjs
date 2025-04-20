@@ -20,7 +20,7 @@ export default function Mytabs() {
 
     return (
         <Tabs defaultValue="login" className="w-10/12 h-fit">
-            <TabsList className="grid w-full md:grid-cols-3 gap-1.5 bg-slate-900 text-white py-1.5 px-2 mb-2">
+            <TabsList className="grid w-full md:grid-cols-2 gap-1.5 bg-slate-900 text-white py-1.5 px-2 mb-2">
                 <TabsTrigger value="login"
                     className={`${handleCss("tab1")}`}
                     onClick={() => handleSelection("tab1")}
@@ -40,9 +40,9 @@ export default function Mytabs() {
             <TabsContent value="signup" className="h-fit">
                 <Signup />
             </TabsContent>
-            <TabsContent value="forgetpassword">
+            {/* <TabsContent value="forgetpassword">
                 <Forgetpassword />
-            </TabsContent>
+            </TabsContent> */}
         </Tabs>
     )
 }

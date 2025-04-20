@@ -174,8 +174,8 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
               if (io.current) {
                 io.current.emit("message_send", {
                   sid: loggedUid,
-                  text: inputFieldText,
                   rid: selectedUser.uid,
+                  text: inputFieldText,
                   send_at: send_at,
                   is_read: "unread"
                 })

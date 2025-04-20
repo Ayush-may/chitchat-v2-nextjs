@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LogOut, Search, ArrowLeft, User } from "lucide-react"
+import { LogOut, Search, ArrowLeft, User, Users } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useRouter } from 'next/navigation'
 import AddFriendButton from './components/AddFriendButton'
@@ -19,6 +19,9 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { useSocketIo } from '@/hooks/useSocketIo'
 
+// const notificationSound = new Audio("/simple_notification.mp3")
+// notificationSound.load(); // preload
+// notificationSound.volume = 1
 
 // returns friend list
 const getLoggedUserFriends = async (loggedUser) => {
@@ -52,24 +55,57 @@ export default function ChatInterface() {
   const router = useRouter();
   const screenRef = useRef(null);
   const io = useSocketIo()
+  const audioRef = useRef(null);
 
   useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio("/simple_notification.mp3");
+      audioRef.current.load();
+      audioRef.current.volume = 1
+    }
+
     const uid = localStorage.getItem("uid");
 
-    // socketio.emit('welcome', { uid })
     if (io.current) {
       io.current.emit('welcome', { uid })
-
     }
+
+    return () => {
+      io.current.disconnect();
+    };
+  }, [])
+
+
+  useEffect(() => {
     io.current.on('notification_send', (data) => {
-      alert("incoming message")
+      console.log('notification is coming')
+      audioRef.current.currentTime = 0
+      audioRef.current.play()
+
+      console.log(users)
+
+      if (Array.isArray(users)) {
+        const senderId = data.sid
+
+        setUsers((prev) => {
+          const index = prev.findIndex(user => user.uid === senderId);
+
+          const updated = [...prev];
+          const [selected] = updated.splice(index, 1);
+          return [selected, ...updated];
+        })
+
+        toast.success("new incoming message")
+      } else {
+        toast.error("user not found")
+      }
+
     })
 
-    // return () => {
-    //   // socketio.disconnect();
-    //   io.current.disconnect();
-    // };
-  }, [])
+    return () => {
+      io.current.off('notification_send');
+    };
+  }, [users])
 
   useEffect(() => {
     setLoggedUser(localStorage.getItem("uid"));
@@ -142,6 +178,10 @@ export default function ChatInterface() {
 
   const refetchAllAddedFriends = () => {
     getLoggedUserFriendsQuery.refetch();
+  }
+
+  const updateUserListPosition = (data) => {
+
   }
 
   return (
