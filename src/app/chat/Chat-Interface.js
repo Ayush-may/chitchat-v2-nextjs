@@ -70,9 +70,6 @@ export default function ChatInterface() {
       io.current.emit('welcome', { uid })
     }
 
-    return () => {
-      io.current.disconnect();
-    };
   }, [])
 
 

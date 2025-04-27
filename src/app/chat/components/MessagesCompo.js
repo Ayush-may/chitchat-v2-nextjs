@@ -5,8 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import EmojiPopover from "./EmojiPopover";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { ImagePlus, Send } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+
 
 const getLoggedUserAndSelectedUserMessages = async ({ loggedUid, selectedUid }) => {
   try {
@@ -36,6 +38,7 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
   const inputRef = useRef(null);
   const dummy = useRef(null);
   const [lastMessage, setLastMessage] = useState({})
+  const [imagePreview, setimagePreview] = useState(null)
 
   // Reacy query- Runs every time
   const getLoggedUserAndSelectedUserMessagesQuery = useQuery(
@@ -45,7 +48,7 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
       return getLoggedUserAndSelectedUserMessages({ loggedUid, selectedUid, lastMessage })
     },
     {
-      cacheTime: 5000
+      // cacheTime: 5000
       // enabled: !!loggedUid && !!selectedUser.uid,
       // staleTime: 0,
       // refetchInterval: 5000,
@@ -64,6 +67,10 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
         setLastMessage(new Date(data.send_at).toISOString())
         dummy.current.scrollIntoView({ behaviour: "smooth" });
       })
+    }
+
+    return () => {
+      io.current.off('message_receive');
     }
   }, [])
 
@@ -111,6 +118,18 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
     })
   }
 
+  const handleImageSelection = (event) => {
+    const file = event.target.files[0]
+    console.log(file, event)
+    if (file) {
+      const filereader = new FileReader()
+      filereader.onload = (data) => {
+        setimagePreview(filereader.result)
+      }
+      filereader.readAsDataURL(file)
+    }
+  }
+
   return (
     <>
 
@@ -153,6 +172,57 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
       </div >
       <div className='border p-2 flex gap-2'>
         <EmojiPopover />
+
+        <Dialog>
+          <DialogTrigger>
+            <Button variant="outline" >
+              <ImagePlus className="h-5 w-5 text-gray-500" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-h-[80vh] overflow-y-auto" >
+            <DialogHeader>
+              <DialogTitle>Send Image</DialogTitle>
+              <DialogDescription>
+                Choose an image to send in the chat.
+              </DialogDescription>
+            </DialogHeader>
+
+            {
+              imagePreview &&
+              <img
+                src={imagePreview}
+                alt="Selected Preview"
+                className="w-full max-h-[400px] rounded-md object-contain"
+              />
+            }
+
+            {
+              !imagePreview &&
+              <label className="border-2 border-dashed border-gray-300 rounded-md w-full h-[200px] flex items-center justify-center cursor-pointer hover:bg-gray-100 duration-200 transition-all">
+                <span className="text-gray-600">Click/Paste image</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageSelection}
+                />
+              </label>
+            }
+
+
+            <DialogFooter>
+              <Button variant="ghost" >
+                {/* <Send className='h-4 w-4 text-gray-300' /> */}
+                <Label className='ms-2'>Clear</Label>
+              </Button>
+              <Button >
+                <Send className='h-4 w-4 text-gray-300' />
+                <Label className='ms-2'>Send</Label>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <Input
           ref={inputRef}
           type="text"
@@ -164,23 +234,22 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
             if (e.key === "Enter") {
               let send_at = Date.now()
 
+              // if (io.current) {
+              io.current.emit("message_send", {
+                sid: loggedUid,
+                rid: selectedUser.uid,
+                text: inputFieldText,
+                send_at: send_at,
+                is_read: "unread"
+              })
+              // }
+
               handleSendMessageFromLoggedToSelectedUserMutation.mutate({
                 loggedUid,
                 text: inputFieldText,
                 selectedUid: selectedUser.uid,
                 send_at,
               });
-
-              if (io.current) {
-                io.current.emit("message_send", {
-                  sid: loggedUid,
-                  rid: selectedUser.uid,
-                  text: inputFieldText,
-                  send_at: send_at,
-                  is_read: "unread"
-                })
-                console.log('message is send to backend')
-              }
 
               setMessageIntoExistingMessage(inputFieldText, loggedUid)
               setInputFieldText("");
