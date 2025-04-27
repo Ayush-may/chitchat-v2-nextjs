@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ImagePlus, Send } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { DialogClose } from "@radix-ui/react-dialog";
 
 
 const getLoggedUserAndSelectedUserMessages = async ({ loggedUid, selectedUid }) => {
@@ -32,13 +33,15 @@ const handleSendMessageFromLoggedToSelectedUser = async ({ loggedUid, selectedUi
 }
 
 // COMPONENT
-const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
+const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser }) => {
   const [messages, setMessages] = useState([]);
   const [inputFieldText, setInputFieldText] = useState("")
   const inputRef = useRef(null);
   const dummy = useRef(null);
   const [lastMessage, setLastMessage] = useState({})
   const [imagePreview, setimagePreview] = useState(null)
+  const [open, setOpen] = useState(false)
+  const imageSendRef = useRef(null)
 
   // Reacy query- Runs every time
   const getLoggedUserAndSelectedUserMessagesQuery = useQuery(
@@ -61,6 +64,41 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
 
 
   useEffect(() => {
+    const handleKeyDown = (event) => {
+      const key = event.key.toLowerCase();
+
+      if (key === 'r') {
+        console.log('Reply to selected message.');
+      }
+      else if (key === '/') {
+        event.preventDefault();
+        inputRef.current.focus()
+        console.log('Focus message input.');
+      }
+      else if (event.ctrlKey && key === 'i') {
+        console.log('Open image send dialog.');
+      }
+      else if (event.ctrlKey && key === 'f') {
+        event.preventDefault();
+        console.log('Focus searchbar.');
+      }
+      else if (key === 'escape') {
+        setSelectedUser(null)
+        console.log('Clear selected user.');
+      }
+      else if (event.ctrlKey && key === 'd') {
+        console.log('Delete mode activated! Press 1, 2, or 3...');
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown); // Cleanup!
+    };
+  }, [])
+
+  useEffect(() => {
     if (io.current) {
       io.current.on('message_receive', (data) => {
         setMessageIntoExistingMessage(data.text, data.sid)
@@ -68,6 +106,12 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
         dummy.current.scrollIntoView({ behaviour: "smooth" });
       })
     }
+
+    document.addEventListener('keydown', function (event) {
+      if (event.ctrlKey && event.key === 'c' && event.key === 'i') {
+        console.log('Ctrl + S was pressed!');
+      }
+    });
 
     return () => {
       io.current.off('message_receive');
@@ -125,9 +169,28 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
       const filereader = new FileReader()
       filereader.onload = (data) => {
         setimagePreview(filereader.result)
+        if (imageSendRef.current) {
+          imageSendRef.current.focus()
+        }
       }
       filereader.readAsDataURL(file)
     }
+  }
+
+  const handleDialogToggling = () => {
+    if (!open) {
+      setOpen(false)
+      setimagePreview(null);
+    }
+  }
+
+  const sendSelectedImage = () => {
+    const option = {
+      type: 'image',
+      data: imagePreview,
+      sender: loggedUid,
+    }
+    setMessages(prev => ([...prev, option]))
   }
 
   return (
@@ -157,24 +220,67 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
                 username = "You";
               }
 
-              return (
-                < MessageBox
-                  key={message?.mid}
-                  text={message.text}
-                  selectedUser={selectedUser}
-                  avatar={avatar}
-                  username={username} />
-              )
+              if (message.type == 'image') {
+                return (
+                  <div className="flex" >
+                    <div className={`${message.sender == loggedUid ? 'ms-auto' : ''}`} >
+                      <Dialog >
+                        <DialogTrigger >
+                          <div className="border p-2 max-w-[300px] rounded-md shadow flex flex-col ">
+                            <img
+                              src={message.data}
+                              alt="Full Preview"
+                              className="w-full max-h-[300px] object-contain rounded-md"
+                            />
+                            {
+                              message.text &&
+                              <Label className="mt-2 leading-relaxed">Ayush ye dekho aaj hm ye Ayush ye dekho aaj hm ye Ayush ye dekho aaj hm ye Ayush ye dekho aaj hm ye Ayush ye dekho aaj hm ye  </Label>
+                            }
+                          </div>
+                        </DialogTrigger>
+                        <DialogContent >
+                          <img
+                            src={message.data}
+                            alt="Full Preview"
+                            className="w-full object-contain rounded-md"
+                          />
+                          {/* <p>Ayush sharma is geate </p> */}
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </div>
+                )
+              }
+              else {
+                return (
+                  < MessageBox
+                    key={message?.mid}
+                    text={message.text}
+                    selectedUser={selectedUser}
+                    avatar={avatar}
+                    username={username} />
+                )
+              }
             })
+
         }
+        <div className="border p-2 max-w-[300px] rounded-md shadow flex flex-col ">
+          <img
+            src={"https://placehold.co/5000x3000"}
+            alt="Full Preview"
+            className="w-full max-h-[300px] object-contain rounded-md"
+          />
+          <Label className="mt-2 leading-relaxed">Ayush ye dekho aaj hm ye Ayush ye dekho aaj hm ye Ayush ye dekho aaj hm ye Ayush ye dekho aaj hm ye Ayush ye dekho aaj hm ye  </Label>
+        </div>
+
         {/* dummy extra box */}
         <div ref={dummy} className="flex-shrink-0 h-[100px]"></div>
       </div >
       <div className='border p-2 flex gap-2'>
         <EmojiPopover />
 
-        <Dialog>
-          <DialogTrigger>
+        <Dialog onOpenChange={handleDialogToggling} >
+          <DialogTrigger asChild >
             <Button variant="outline" >
               <ImagePlus className="h-5 w-5 text-gray-500" />
             </Button>
@@ -198,7 +304,7 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
 
             {
               !imagePreview &&
-              <label className="border-2 border-dashed border-gray-300 rounded-md w-full h-[200px] flex items-center justify-center cursor-pointer hover:bg-gray-100 duration-200 transition-all">
+              <label className="border-2 border-dashed border-gray-300 rounded-md w-full h-[100px] flex items-center justify-center cursor-pointer hover:bg-gray-100 duration-200 transition-all">
                 <span className="text-gray-600">Click/Paste image</span>
                 <input
                   type="file"
@@ -208,17 +314,20 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io }) => {
                 />
               </label>
             }
-
-
             <DialogFooter>
-              <Button variant="ghost" >
-                {/* <Send className='h-4 w-4 text-gray-300' /> */}
-                <Label className='ms-2'>Clear</Label>
-              </Button>
-              <Button >
-                <Send className='h-4 w-4 text-gray-300' />
-                <Label className='ms-2'>Send</Label>
-              </Button>
+              <DialogClose>
+                <Button variant="ghost" >
+                  {/* <Send className='h-4 w-4 text-gray-300' /> */}
+                  <Label className='ms-2'>Clear</Label>
+                </Button>
+                {
+                  imagePreview &&
+                  <Button ref={imageSendRef} onClick={sendSelectedImage} >
+                    <Send className='h-4 w-4 text-gray-300' />
+                    <Label className='ms-2'>Send</Label>
+                  </Button>
+                }
+              </DialogClose>
             </DialogFooter>
           </DialogContent>
         </Dialog>

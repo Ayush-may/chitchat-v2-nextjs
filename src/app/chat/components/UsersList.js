@@ -9,9 +9,9 @@ const UserList = ({ users, setSelectedUser, setShowUserList, io }) => {
  return (
   <div className="flex-grow overflow-y-scroll scroll-smooth">
    {users.map(user => (
-    <div
+    <button
      key={user.uid}
-     className={`flex items-center space-x-4 p-4 hover:bg-gray-100 cursor-pointer transition-colors duration-200 border-0 border-b`}
+     className={`w-full flex items-center space-x-4 p-4 hover:bg-gray-100 cursor-pointer transition-colors duration-200 border-0 border-b`}
      onClick={() => {
       setSelectedUser(user);
       setShowUserList(false);
@@ -23,15 +23,15 @@ const UserList = ({ users, setSelectedUser, setShowUserList, io }) => {
      }}
     >
      <UserAvatar user={user} />
-     <div className="flex-1 min-w-0">
+     <div className="min-w-0">
       <p className="text-sm font-medium text-gray-900 truncate">{user?.username}</p>
       <p className="text-sm text-gray-400 truncate">todo</p>
      </div>
      {
-      user.is_online == "online" && <div className="w-2 h-2 bg-green-400 rounded-full" ></div>
+      user.is_online == "online" && <div className="ms-auto w-2 h-2 bg-green-400 rounded-full" ></div>
      }
-     <div className="px-1 bg-blue-400 rounded-full text-black text-sm" >1</div>
-    </div>
+     {/* <div className="px-1 bg-blue-400 rounded-full text-black text-sm" >1</div> */}
+    </button>
    ))}
   </div>
  )

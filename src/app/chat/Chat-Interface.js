@@ -56,6 +56,24 @@ export default function ChatInterface() {
   const screenRef = useRef(null);
   const io = useSocketIo()
   const audioRef = useRef(null);
+  const searchRef = useRef(null)
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const key = event.key.toLowerCase();
+
+      if (event.ctrlKey && key === 'f') {
+        event.preventDefault()
+        searchRef.current.focus()
+        console.log('Focus searchbar.');
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [])
 
   useEffect(() => {
     if (!audioRef.current) {
@@ -212,7 +230,7 @@ export default function ChatInterface() {
               <div className="p-2">
                 <div className="relative flex items-center ">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search chats" className="pl-8" />
+                  <Input placeholder="Search chats" className="pl-8" ref={searchRef} />
                   <AddFriendButton loggedUser={loggedUser} refetchAllAddedFriends={refetchAllAddedFriends} />
                 </div>
               </div>
@@ -289,7 +307,7 @@ export default function ChatInterface() {
                       </div>
 
                       {/* message and input area */}
-                      <MessagesCompo io={io} selectedUser={selectedUser} loggedUid={loggedUser} setUsers={setUsers} />
+                      <MessagesCompo io={io} selectedUser={selectedUser} loggedUid={loggedUser} setUsers={setUsers} setSelectedUser={setSelectedUser} />
 
                     </>
                   ) : (
