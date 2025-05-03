@@ -42,6 +42,7 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
   const [imagePreview, setimagePreview] = useState(null)
   const [open, setOpen] = useState(false)
   const imageSendRef = useRef(null)
+  const [selectedFile, setSelectedFile] = useState(null);
 
   // Reacy query- Runs every time
   const getLoggedUserAndSelectedUserMessagesQuery = useQuery(
@@ -101,7 +102,8 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
   useEffect(() => {
     if (io.current) {
       io.current.on('message_receive', (data) => {
-        setMessageIntoExistingMessage(data.text, data.sid)
+        // setMessageIntoExistingMessage(data.text, data.sid)
+        setMessageIntoExistingMessage(data)
         setLastMessage(new Date(data.send_at).toISOString())
         dummy.current.scrollIntoView({ behaviour: "smooth" });
       })
@@ -127,6 +129,7 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
       Array.isArray(getLoggedUserAndSelectedUserMessagesQuery.data
       )) {
       setMessages(getLoggedUserAndSelectedUserMessagesQuery.data);
+      console.log(getLoggedUserAndSelectedUserMessagesQuery.data)
     }
     else {
       setMessages([]);
@@ -151,21 +154,35 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
     })
   }
 
-  const setMessageIntoExistingMessage = (text, senderId) => {
+  // const setMessageIntoExistingMessage = (text, senderId) => {
+  //   setMessages((prev) => {
+  //     const newMessage = {
+  //       sender: senderId,
+  //       text: text,
+  //     }
+
+  //     return [...prev, newMessage]
+  //   })
+  // }
+  ``
+  const setMessageIntoExistingMessage = (data) => {
+    console.log(data.isImage)
+
     setMessages((prev) => {
       const newMessage = {
-        sender: senderId,
-        text: text,
+        sender: data.sid,
+        text: data.text,
+        isImage: data?.isImage
       }
-
       return [...prev, newMessage]
     })
   }
 
   const handleImageSelection = (event) => {
     const file = event.target.files[0]
-    console.log(file, event)
+
     if (file) {
+      setSelectedFile(file)
       const filereader = new FileReader()
       filereader.onload = (data) => {
         setimagePreview(filereader.result)
@@ -184,13 +201,43 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
     }
   }
 
-  const sendSelectedImage = () => {
+  const sendSelectedImage = async () => {
     const option = {
       type: 'image',
       data: imagePreview,
       sender: loggedUid,
     }
-    setMessages(prev => ([...prev, option]))
+    // setMessages(prev => ([...prev, option]))
+    const send_at = Date.now()
+
+    const formData = new FormData();
+    formData.append('upload_image', selectedFile)
+    formData.append('sid', loggedUid)
+    formData.append('rid', selectedUser.uid)
+    formData.append('send_at', send_at)
+
+    try {
+      const res = await axiosConfig.post('/messages/upload-image', formData)
+
+      setMessageIntoExistingMessage({
+        sid: loggedUid,
+        rid: selectedUser.uid,
+        isImage: res.data.url
+      })
+      
+      io.current.emit("message_send", {
+        sid: loggedUid,
+        rid: selectedUser.uid,
+        text: inputFieldText,
+        send_at: send_at,
+        isImage: res.data.url
+      })
+
+      console.log(res)
+    } catch (error) {
+      console.log(error)
+      console.log('something went wwrong')
+    }
   }
 
   return (
@@ -220,7 +267,7 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
                 username = "You";
               }
 
-              if (message.type == 'image') {
+              if (message?.isImage) {
                 return (
                   <div className="flex" >
                     <div className={`${message.sender == loggedUid ? 'ms-auto' : ''}`} >
@@ -228,7 +275,7 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
                         <DialogTrigger >
                           <div className="border p-2 max-w-[300px] rounded-md shadow flex flex-col ">
                             <img
-                              src={message.data}
+                              src={'http://localhost:8080' + message.isImage}
                               alt="Full Preview"
                               className="w-full max-h-[300px] object-contain rounded-md"
                             />
@@ -240,7 +287,7 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
                         </DialogTrigger>
                         <DialogContent >
                           <img
-                            src={message.data}
+                            src={'http://localhost:8080' + message.isImage}
                             alt="Full Preview"
                             className="w-full object-contain rounded-md"
                           />
@@ -264,14 +311,19 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
             })
 
         }
-        <div className="border p-2 max-w-[300px] rounded-md shadow flex flex-col ">
+
+
+        {/* *********Example Image Box********* */}
+        {/* <div className="border p-2 max-w-[300px] rounded-md shadow flex flex-col ">
           <img
             src={"https://placehold.co/5000x3000"}
             alt="Full Preview"
             className="w-full max-h-[300px] object-contain rounded-md"
           />
           <Label className="mt-2 leading-relaxed">Ayush ye dekho aaj hm ye Ayush ye dekho aaj hm ye Ayush ye dekho aaj hm ye Ayush ye dekho aaj hm ye Ayush ye dekho aaj hm ye  </Label>
-        </div>
+        </div> */}
+        {/* *********Example Image Box********* */}
+
 
         {/* dummy extra box */}
         <div ref={dummy} className="flex-shrink-0 h-[100px]"></div>
@@ -301,7 +353,6 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
                 className="w-full max-h-[400px] rounded-md object-contain"
               />
             }
-
             {
               !imagePreview &&
               <label className="border-2 border-dashed border-gray-300 rounded-md w-full h-[100px] flex items-center justify-center cursor-pointer hover:bg-gray-100 duration-200 transition-all">
@@ -343,7 +394,6 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
             if (e.key === "Enter") {
               let send_at = Date.now()
 
-              // if (io.current) {
               io.current.emit("message_send", {
                 sid: loggedUid,
                 rid: selectedUser.uid,
@@ -351,7 +401,6 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
                 send_at: send_at,
                 is_read: "unread"
               })
-              // }
 
               handleSendMessageFromLoggedToSelectedUserMutation.mutate({
                 loggedUid,
@@ -360,7 +409,16 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
                 send_at,
               });
 
-              setMessageIntoExistingMessage(inputFieldText, loggedUid)
+              const data = {
+                sid: loggedUid,
+                rid: selectedUser.uid,
+                text: inputFieldText,
+                isImage: null,
+                send_at
+              }
+
+              // setMessageIntoExistingMessage(inputFieldText, loggedUid)
+              setMessageIntoExistingMessage(data)
               setInputFieldText("");
               dummy.current.scrollIntoView({ behaviour: "smooth" });
               updateUserListPosition()
