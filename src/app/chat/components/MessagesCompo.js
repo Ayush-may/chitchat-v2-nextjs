@@ -224,7 +224,7 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
         rid: selectedUser.uid,
         isImage: res.data.url
       })
-      
+
       io.current.emit("message_send", {
         sid: loggedUid,
         rid: selectedUser.uid,
@@ -275,7 +275,7 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
                         <DialogTrigger >
                           <div className="border p-2 max-w-[300px] rounded-md shadow flex flex-col ">
                             <img
-                              src={'http://localhost:8080' + message.isImage}
+                              src={'https://chatapi.ayushmay.me' + message.isImage}
                               alt="Full Preview"
                               className="w-full max-h-[300px] object-contain rounded-md"
                             />
@@ -287,7 +287,7 @@ const MessagesCompo = ({ selectedUser, loggedUid, setUsers, io, setSelectedUser 
                         </DialogTrigger>
                         <DialogContent >
                           <img
-                            src={'http://localhost:8080' + message.isImage}
+                            src={'https://chatapi.ayushmay.me' + message.isImage}
                             alt="Full Preview"
                             className="w-full object-contain rounded-md"
                           />
