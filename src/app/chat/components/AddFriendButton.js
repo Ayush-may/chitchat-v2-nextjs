@@ -86,7 +86,7 @@ const AddFriendButton = ({ loggedUser, refetchAllAddedFriends }) => {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <DialogContent className="max-h-[50%] text-start max-w-80 md:max-w-xl rounded-md">
+      <DialogContent className="max-h-[80%] text-start max-w-80 md:max-w-xl pb-3 rounded-md overflow-y-scroll">
         <DialogHeader>
           <DialogTitle>Add Friend</DialogTitle>
           <DialogDescription>Select users from the list below to start your conversation.</DialogDescription>
